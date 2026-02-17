@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Card,
   CardContent,
@@ -9,7 +11,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from 'recharts';
@@ -103,28 +104,26 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-64 w-full">
-              <ResponsiveContainer>
-                <BarChart data={salesData}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    tickFormatter={(value) => `$${value / 1000}k`}
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                  />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent />}
-                  />
-                  <Bar dataKey="sales" fill="var(--color-sales)" radius={8} />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChart data={salesData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="month"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <YAxis
+                  tickFormatter={(value) => `$${value / 1000}k`}
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <Bar dataKey="sales" fill="var(--color-sales)" radius={8} />
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
@@ -136,25 +135,23 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-64 w-full">
-              <ResponsiveContainer>
-                <BarChart data={inventoryData} layout="vertical">
-                  <CartesianGrid horizontal={false} />
-                  <YAxis
-                    dataKey="category"
-                    type="category"
-                    tickLine={false}
-                    tickMargin={10}
-                    axisLine={false}
-                    width={80}
-                  />
-                  <XAxis type="number" hide />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent />}
-                  />
-                  <Bar dataKey="quantity" fill="var(--color-sales)" radius={5} />
-                </BarChart>
-              </ResponsiveContainer>
+              <BarChart data={inventoryData} layout="vertical">
+                <CartesianGrid horizontal={false} />
+                <YAxis
+                  dataKey="category"
+                  type="category"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                  width={80}
+                />
+                <XAxis type="number" hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <Bar dataKey="quantity" fill="var(--color-sales)" radius={5} />
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>
