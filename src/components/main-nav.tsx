@@ -7,22 +7,14 @@ import {
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
-  ShoppingBag,
   Package,
-  Lightbulb,
-  Users,
-  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/orders', label: 'Orders', icon: ShoppingBag },
-  { href: '/products', label: 'Products', icon: Package },
-  { href: '/merchandising', label: 'Merchandising', icon: Lightbulb },
-  { href: '/customers', label: 'Customers', icon: Users },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/inventory', label: 'Inventory', icon: Package },
 ];
 
 export function MainNav() {

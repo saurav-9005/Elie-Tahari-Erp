@@ -22,75 +22,79 @@ import {
 import {
   DollarSign,
   Package,
-  ShoppingBag,
-  CircleDollarSign,
+  PackageX,
+  Warehouse,
 } from 'lucide-react';
-import { salesData, inventoryData } from '@/lib/data';
+import { overallInventoryData, inventoryValueData } from '@/lib/data';
 
 const chartConfig = {
-  sales: {
-    label: 'Sales',
+  quantity: {
+    label: 'Quantity',
     color: 'hsl(var(--chart-1))',
   },
+  value: {
+    label: 'Value',
+    color: 'hsl(var(--chart-2))',
+  }
 };
 
 export default function Dashboard() {
   return (
     <div className="flex flex-col gap-8">
       <h1 className="font-headline text-3xl font-semibold tracking-tight">
-        Dashboard
+        Inventory Dashboard
       </h1>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Inventory Units</CardTitle>
+            <Warehouse className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12,345</div>
+            <p className="text-xs text-muted-foreground">
+              Across all locations
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Inventory Value</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$45,231.89</div>
+            <div className="text-2xl font-bold">$2,125,920.00</div>
             <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Orders</CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+1,234</div>
-            <p className="text-xs text-muted-foreground">
-              +18.1% from last month
+              Total value of all stock
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Inventory Value
+              Out of Stock Products
             </CardTitle>
-            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+            <PackageX className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$125,920.00</div>
+            <div className="text-2xl font-bold">1</div>
             <p className="text-xs text-muted-foreground">
-              Total value of items in stock
+              Products with zero inventory
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Items to Fulfill
+              Low Stock Products
             </CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">57</div>
+            <div className="text-2xl font-bold">2</div>
             <p className="text-xs text-muted-foreground">
-              Orders awaiting shipment
+              Products with &lt; 5 units
             </p>
           </CardContent>
         </Card>
@@ -99,21 +103,21 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Sales Performance</CardTitle>
-            <CardDescription>Last 6 months</CardDescription>
+            <CardTitle>Inventory by Location</CardTitle>
+            <CardDescription>Factory vs. Warehouse vs. Shopify</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-64 w-full">
-              <BarChart data={salesData}>
+              <BarChart data={overallInventoryData}>
                 <CartesianGrid vertical={false} />
                 <XAxis
-                  dataKey="month"
+                  dataKey="location"
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
                 />
                 <YAxis
-                  tickFormatter={(value) => `$${value / 1000}k`}
+                  tickFormatter={(value) => `${'value'}`}
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
@@ -122,7 +126,7 @@ export default function Dashboard() {
                   cursor={false}
                   content={<ChartTooltipContent />}
                 />
-                <Bar dataKey="sales" fill="var(--color-sales)" radius={8} />
+                <Bar dataKey="quantity" fill="var(--color-quantity)" radius={8} />
               </BarChart>
             </ChartContainer>
           </CardContent>
@@ -130,12 +134,12 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Inventory Levels</CardTitle>
-            <CardDescription>Top 5 product categories</CardDescription>
+            <CardTitle>Inventory Value by Category</CardTitle>
+            <CardDescription>Top 5 product categories by value</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="h-64 w-full">
-              <BarChart data={inventoryData} layout="vertical">
+              <BarChart data={inventoryValueData} layout="vertical">
                 <CartesianGrid horizontal={false} />
                 <YAxis
                   dataKey="category"
@@ -148,9 +152,9 @@ export default function Dashboard() {
                 <XAxis type="number" hide />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent />}
+                  content={<ChartTooltipContent formatter={(value) => `$${(value as number).toLocaleString()}`} />}
                 />
-                <Bar dataKey="quantity" fill="var(--color-sales)" radius={5} />
+                <Bar dataKey="value" fill="var(--color-value)" radius={5} />
               </BarChart>
             </ChartContainer>
           </CardContent>
