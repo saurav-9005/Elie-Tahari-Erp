@@ -1,3 +1,52 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "silk-dress",
+      "description": "A-line silk dress",
+      "imageUrl": "https://images.unsplash.com/photo-1484328256245-34b71758c30b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzaWxrJTIwZHJlc3N8ZW58MHx8fHwxNzcxMzE2MDYxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "silk dress"
+    },
+    {
+      "id": "maxi-skirt",
+      "description": "Floral print maxi skirt",
+      "imageUrl": "https://images.unsplash.com/photo-1615898290907-0ad011905389?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYXhpJTIwc2tpcnR8ZW58MHx8fHwxNzcxMzA5MzczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "maxi skirt"
+    },
+    {
+      "id": "cashmere-cardigan",
+      "description": "Cashmere cardigan",
+      "imageUrl": "https://picsum.photos/seed/103/400/600",
+      "imageHint": "cashmere cardigan"
+    },
+    {
+      "id": "leather-clutch",
+      "description": "Leather clutch",
+      "imageUrl": "https://images.unsplash.com/photo-1758328537049-aae2d077f1dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsZWF0aGVyJTIwY2x1dGNofGVufDB8fHx8MTc3MTMxNjA2Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather clutch"
+    },
+    {
+      "id": "wool-coat",
+      "description": "Wool coat",
+      "imageUrl": "https://images.unsplash.com/photo-1606453860825-29443dab3893?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b29sJTIwY29hdHxlbnwwfHx8fDE3NzEyNzI0OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wool coat"
+    },
+    {
+      "id": "linen-blouse",
+      "description": "Linen blouse",
+      "imageUrl": "https://images.unsplash.com/photo-1715441330070-3c74704ab287?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsaW5lbiUyMGJsb3VzZXxlbnwwfHx8fDE3NzEzNjI3OTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "linen blouse"
+    },
+    {
+      "id": "suede-boots",
+      "description": "Ankle Suede Boots",
+      "imageUrl": "https://images.unsplash.com/photo-1759054143963-3afaecd94531?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdWVkZSUyMGJvb3RzfGVufDB8fHx8MTc3MTMyMzQzNXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "suede boots"
+    },
+    {
+      "id": "trench-coat",
+      "description": "Classic Trench Coat",
+      "imageUrl": "https://images.unsplash.com/photo-1573545289441-827c028f7a3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmVuY2glMjBjb2F0fGVufDB8fHx8MTc3MTI2Mjc2M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "trench coat"
+    }
+  ]
 }
