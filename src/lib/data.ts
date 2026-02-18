@@ -1,9 +1,3 @@
-export const overallInventoryData = [
-  { location: 'Factory', quantity: 150 },
-  { location: 'Warehouse', quantity: 65 },
-  { location: 'Shopify', quantity: 45 },
-];
-
 export const inventoryValueData = [
   { category: 'Coats', value: 37500 },
   { category: 'Dresses', value: 8500 },
