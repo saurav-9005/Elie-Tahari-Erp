@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,10 +11,25 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { CreditCard, LogOut, Settings, User } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
+
+type Role = 'Sales Manager' | 'Admin' | 'Factory Manager' | 'Warehouse Manager' | 'E-commerce Manager' | 'Finance';
+
+const roleEmails: Record<Role, string> = {
+    'Admin': 'admin@coutureflow.com',
+    'Factory Manager': 'factory.manager@coutureflow.com',
+    'Warehouse Manager': 'warehouse.manager@coutureflow.com',
+    'E-commerce Manager': 'ecomm.manager@coutureflow.com',
+    'Finance': 'finance@coutureflow.com',
+    'Sales Manager': 'manager@coutureflow.com', // default
+}
 
 export function UserNav() {
+  const [role, setRole] = useState<Role>('Sales Manager');
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,9 +43,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Sales Manager</p>
+            <p className="text-sm font-medium leading-none">{role}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              manager@coutureflow.com
+              {roleEmails[role]}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -38,13 +56,18 @@ export function UserNav() {
             Profile
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <CreditCard />
-            Billing
-          </DropdownMenuItem>
-          <DropdownMenuItem>
             <Settings />
             Settings
           </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+            <DropdownMenuLabel>Switch Role (Demo)</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={role} onValueChange={(value) => setRole(value as Role)}>
+                {Object.keys(roleEmails).map(roleName => (
+                    <DropdownMenuRadioItem key={roleName} value={roleName}>{roleName}</DropdownMenuRadioItem>
+                ))}
+            </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>

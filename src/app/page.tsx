@@ -10,6 +10,8 @@ import {
 import {
   Bar,
   BarChart,
+  Line,
+  LineChart,
   CartesianGrid,
   XAxis,
   YAxis,
@@ -27,13 +29,32 @@ import {
 } from 'lucide-react';
 import { overallInventoryData, inventoryValueData } from '@/lib/data';
 
+// New data for the new charts
+const inventoryValueTrendData = [
+    { date: 'Jan 24', value: 2050000 },
+    { date: 'Feb 24', value: 2080000 },
+    { date: 'Mar 24', value: 2150000 },
+    { date: 'Apr 24', value: 2125920 },
+    { date: 'May 24', value: 2180000 },
+    { date: 'Jun 24', value: 2250000 },
+];
+
+const stockAgingData = [
+    { range: '0-30d', quantity: 8200 },
+    { range: '31-60d', quantity: 2500 },
+    { range: '61-90d', quantity: 1200 },
+    { range: '90-180d', quantity: 445 },
+    { range: '>180d', quantity: 150 },
+];
+
+
 const chartConfig = {
   quantity: {
     label: 'Quantity',
     color: 'hsl(var(--chart-1))',
   },
   value: {
-    label: 'Value',
+    label: 'Value ($)',
     color: 'hsl(var(--chart-2))',
   }
 };
@@ -80,7 +101,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">1</div>
             <p className="text-xs text-muted-foreground">
-              Products with zero inventory
+             SKUs with zero sellable inventory
             </p>
           </CardContent>
         </Card>
@@ -94,7 +115,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="text-2xl font-bold">2</div>
             <p className="text-xs text-muted-foreground">
-              Products with &lt; 5 units
+              SKUs with &lt; 10 units
             </p>
           </CardContent>
         </Card>
@@ -117,7 +138,6 @@ export default function Dashboard() {
                   axisLine={false}
                 />
                 <YAxis
-                  tickFormatter={(value) => `${'value'}`}
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
@@ -155,6 +175,51 @@ export default function Dashboard() {
                   content={<ChartTooltipContent formatter={(value) => `$${(value as number).toLocaleString()}`} />}
                 />
                 <Bar dataKey="value" fill="var(--color-value)" radius={5} />
+              </BarChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Inventory Value Trend</CardTitle>
+            <CardDescription>Value of inventory over the last 6 months.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-64 w-full">
+              <LineChart data={inventoryValueTrendData}>
+                <CartesianGrid vertical={false} />
+                <XAxis dataKey="date" tickLine={false} tickMargin={10} axisLine={false} />
+                <YAxis tickFormatter={(value) => `$${Number(value) / 1000000}M`} tickLine={false} tickMargin={10} axisLine={false} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent formatter={(value) => `$${(value as number).toLocaleString()}`} />}
+                />
+                <Line type="monotone" dataKey="value" stroke="var(--color-value)" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Stock Aging Report</CardTitle>
+            <CardDescription>Distribution of inventory by age.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ChartContainer config={chartConfig} className="h-64 w-full">
+              <BarChart data={stockAgingData}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="range"
+                  tickLine={false}
+                  tickMargin={10}
+                  axisLine={false}
+                />
+                <YAxis tickLine={false} tickMargin={10} axisLine={false} hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent />}
+                />
+                <Bar dataKey="quantity" fill="var(--color-quantity)" radius={8} />
               </BarChart>
             </ChartContainer>
           </CardContent>

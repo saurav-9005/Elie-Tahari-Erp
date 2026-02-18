@@ -17,10 +17,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { factoryOrders, warehouseInventory, shopifyProducts, type FactoryOrder, type WarehouseItem, type ShopifyProduct } from '@/lib/inventory-data';
-import { sendOutOfStockReport } from './actions';
+import { factoryInventory, warehouseInventory, shopifyInventory, type FactoryInventoryItem, type WarehouseInventoryItem, type ShopifyInventoryItem } from '@/lib/inventory-data';
+import { generateAndSendReport } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Mail } from 'lucide-react';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 
@@ -30,7 +30,7 @@ export default function InventoryPage() {
 
     async function handleSendReport() {
         setIsLoading(true);
-        const result = await sendOutOfStockReport();
+        const result = await generateAndSendReport();
         if (result.success) {
             toast({
                 title: 'Inventory Report',
@@ -51,77 +51,90 @@ export default function InventoryPage() {
       <div className="flex justify-between items-start">
         <div>
             <h1 className="font-headline text-3xl font-semibold tracking-tight">
-                Inventory Tracking
+                End-to-End Inventory Management
             </h1>
             <p className="text-muted-foreground">
-                Monitor inventory from factory, warehouse, and Shopify.
+                Track inventory from Factory, to Warehouse (WMS), to Shopify.
             </p>
         </div>
         <Button onClick={handleSendReport} disabled={isLoading}>
-            {isLoading ? <Loader2 className="animate-spin" /> : <Mail />}
-            Send Out of Stock Report
+            {isLoading ? <Loader2 className="animate-spin" /> : <AlertTriangle />}
+            Generate & Send Alert Report
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Factory Orders</CardTitle>
-            <CardDescription>Inventory in production or transit.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Status</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle>Factory Inventory</CardTitle>
+          <CardDescription>Inventory in production or transit from the factory.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>PO Number</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Quantity</TableHead>
+                <TableHead>Production Status</TableHead>
+                <TableHead>Expected Arrival</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {factoryInventory.map((order: FactoryInventoryItem) => (
+                <TableRow key={order.poNumber}>
+                  <TableCell className="font-medium">{order.poNumber}</TableCell>
+                  <TableCell>{order.style} ({order.color}, {order.size})</TableCell>
+                  <TableCell>{order.sku}</TableCell>
+                  <TableCell>{order.quantity}</TableCell>
+                  <TableCell><Badge variant={order.productionStatus === 'Shipped' ? 'default' : 'secondary'}>{order.productionStatus}</Badge></TableCell>
+                  <TableCell>{order.expectedArrivalDate}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {factoryOrders.map((order: FactoryOrder) => (
-                  <TableRow key={order.orderId}>
-                    <TableCell className="font-medium">{order.productName}</TableCell>
-                    <TableCell>{order.quantity}</TableCell>
-                    <TableCell><Badge variant={order.status === 'In Production' ? 'secondary' : 'default'}>{order.status}</Badge></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Warehouse Inventory</CardTitle>
-            <CardDescription>Inventory in warehouse storage.</CardDescription>
-          </CardHeader>
-          <CardContent>
-             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Location</TableHead>
+      <Card>
+        <CardHeader>
+          <CardTitle>WMS Inventory</CardTitle>
+          <CardDescription>Live inventory data from the warehouse management system.</CardDescription>
+        </CardHeader>
+        <CardContent>
+           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Product</TableHead>
+                <TableHead>SKU</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead className="text-right">Available</TableHead>
+                <TableHead className="text-right">Reserved</TableHead>
+                <TableHead className="text-right">Inbound</TableHead>
+                <TableHead className="text-right">Damaged</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {warehouseInventory.map((item: WarehouseInventoryItem) => (
+                <TableRow key={item.sku}>
+                  <TableCell className="font-medium">{item.productName}</TableCell>
+                  <TableCell>{item.sku}</TableCell>
+                  <TableCell>{item.warehouseLocation}</TableCell>
+                  <TableCell className="text-right">{item.availableQty}</TableCell>
+                  <TableCell className="text-right">{item.reservedQty}</TableCell>
+                  <TableCell className="text-right">{item.inboundQty}</TableCell>
+                  <TableCell className="text-right">{item.damagedQty}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {warehouseInventory.map((item: WarehouseItem) => (
-                  <TableRow key={item.itemId}>
-                    <TableCell className="font-medium">{item.productName}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>{item.location}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
        <Card>
           <CardHeader>
-            <CardTitle>Shopify Product Inventory</CardTitle>
-            <CardDescription>Live inventory levels from your online store.</CardDescription>
+            <CardTitle>Shopify Inventory</CardTitle>
+            <CardDescription>Live inventory levels from your Shopify stores and locations.</CardDescription>
           </CardHeader>
           <CardContent>
              <Table>
@@ -129,17 +142,25 @@ export default function InventoryPage() {
                 <TableRow>
                   <TableHead>Product</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Sellable Quantity</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead className="text-right">Available</TableHead>
+                  <TableHead className="text-right">Committed</TableHead>
+                  <TableHead className="text-right">Incoming</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {shopifyProducts.map((product: ShopifyProduct) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">{product.title}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell className="text-right">{product.inventory_quantity}</TableCell>
-                  </TableRow>
-                ))}
+                {shopifyInventory.flatMap((product: ShopifyInventoryItem) => 
+                    product.inventory.map(inv => (
+                        <TableRow key={`${product.sku}-${inv.location}`}>
+                            <TableCell className="font-medium">{product.productName}</TableCell>
+                            <TableCell>{product.sku}</TableCell>
+                            <TableCell><Badge variant="outline">{inv.location}</Badge></TableCell>
+                            <TableCell className="text-right">{inv.available}</TableCell>
+                            <TableCell className="text-right">{inv.committed}</TableCell>
+                            <TableCell className="text-right">{inv.incoming}</TableCell>
+                        </TableRow>
+                    ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
