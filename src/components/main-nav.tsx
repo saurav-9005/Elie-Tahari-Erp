@@ -8,7 +8,6 @@ import {
 import {
   LayoutDashboard,
   Package,
-  ShoppingBag,
   Barcode,
   TrendingUp,
 } from 'lucide-react';
@@ -18,7 +17,6 @@ import { usePathname } from 'next/navigation';
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/products', label: 'Product Catalog', icon: ShoppingBag },
   { href: '/upc-code', label: 'UPC code', icon: Barcode },
   { href: '/sale-report', label: 'Sale Report', icon: TrendingUp },
 ];
