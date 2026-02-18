@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Package,
   ShoppingBag,
+  Barcode,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -17,6 +18,7 @@ const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inventory', label: 'Inventory', icon: Package },
   { href: '/products', label: 'Products', icon: ShoppingBag },
+  { href: 'https://elie-tahari.vercel.app/', label: 'UPC code', icon: Barcode },
 ];
 
 export function MainNav() {
