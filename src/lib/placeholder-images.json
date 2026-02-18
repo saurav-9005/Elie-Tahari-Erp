@@ -1,50 +1,50 @@
 {
   "placeholderImages": [
     {
-      "id": "silk-dress",
-      "description": "A-line silk dress",
-      "imageUrl": "https://images.unsplash.com/photo-1484328256245-34b71758c30b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzaWxrJTIwZHJlc3N8ZW58MHx8fHwxNzcxMzE2MDYxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "silk dress"
+      "id": "sheath-dress",
+      "description": "The Collared V-Neck Sheath Dress",
+      "imageUrl": "https://images.unsplash.com/photo-1629221191319-8a3556108e16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzaGVhdGglMjBkcmVzc3xlbnwwfHx8fDE3NzE5NTQwODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "sheath dress"
     },
     {
-      "id": "maxi-skirt",
-      "description": "Floral print maxi skirt",
-      "imageUrl": "https://images.unsplash.com/photo-1615898290907-0ad011905389?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYXhpJTIwc2tpcnR8ZW58MHx8fHwxNzcxMzA5MzczfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "maxi skirt"
+      "id": "ruched-blazer",
+      "description": "The Ruched Sleeve Blazer",
+      "imageUrl": "https://images.unsplash.com/photo-1594211183344-2db76c8e3126?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxydWNoZWQlMjBibGF6ZXJ8ZW58MHx8fHwxNzcxOTU0MTM3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "ruched blazer"
     },
     {
-      "id": "cashmere-cardigan",
-      "description": "Cashmere cardigan",
-      "imageUrl": "https://picsum.photos/seed/103/400/600",
-      "imageHint": "cashmere cardigan"
+      "id": "wide-leg-pant",
+      "description": "The Pleated Wide Leg Pant",
+      "imageUrl": "https://images.unsplash.com/photo-1699946452243-c645719363a0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHx3aWRlJTIwbGVnJTIwcGFudHN8ZW58MHx8fHwxNzcxOTU0MTYwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "wide leg pants"
     },
     {
-      "id": "leather-clutch",
-      "description": "Leather clutch",
-      "imageUrl": "https://images.unsplash.com/photo-1758328537049-aae2d077f1dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsZWF0aGVyJTIwY2x1dGNofGVufDB8fHx8MTc3MTMxNjA2Mnww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "leather clutch"
+      "id": "floral-dress",
+      "description": "The Floral Georgette Maxi Dress",
+      "imageUrl": "https://images.unsplash.com/photo-1587280429443-0498e7279a94?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmbG9yYWwlMjBtYXhpJTIwZHJlc3N8ZW58MHx8fHwxNzcxOTU0MjM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "floral dress"
     },
     {
-      "id": "wool-coat",
-      "description": "Wool coat",
-      "imageUrl": "https://images.unsplash.com/photo-1606453860825-29443dab3893?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx3b29sJTIwY29hdHxlbnwwfHx8fDE3NzEyNzI0OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "wool coat"
+      "id": "silk-blouse",
+      "description": "The Silk Charmeuse Blouse",
+      "imageUrl": "https://images.unsplash.com/photo-1621932943339-43c7b738d821?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzaWxrJTIwYmxvdXNlfGVufDB8fHx8MTc3MTk1NDI5NHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "silk blouse"
     },
     {
-      "id": "linen-blouse",
-      "description": "Linen blouse",
-      "imageUrl": "https://images.unsplash.com/photo-1715441330070-3c74704ab287?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsaW5lbiUyMGJsb3VzZXxlbnwwfHx8fDE3NzEzNjI3OTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "linen blouse"
+      "id": "leather-skirt",
+      "description": "The Faux Leather Pleated Skirt",
+      "imageUrl": "https://images.unsplash.com/photo-1594625232959-577234f40f74?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsZWF0aGVyJTIwc2tpcnR8ZW58MHx8fHwxNzcxOTU0MzIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "leather skirt"
     },
     {
-      "id": "suede-boots",
-      "description": "Ankle Suede Boots",
-      "imageUrl": "https://images.unsplash.com/photo-1759054143963-3afaecd94531?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzdWVkZSUyMGJvb3RzfGVufDB8fHx8MTc3MTMyMzQzNXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "suede boots"
+      "id": "jumpsuit",
+      "description": "The Cuffed V-Neck Jumpsuit",
+      "imageUrl": "https://images.unsplash.com/photo-1593193934839-16a243b624f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxqdW1wc3VpdHxlbnwwfHx8fDE3NzE5NTQzNDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jumpsuit"
     },
     {
       "id": "trench-coat",
-      "description": "Classic Trench Coat",
+      "description": "The Modern Trench Coat",
       "imageUrl": "https://images.unsplash.com/photo-1573545289441-827c028f7a3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmVuY2glMjBjb2F0fGVufDB8fHx8MTc3MTI2Mjc2M3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "trench coat"
     }

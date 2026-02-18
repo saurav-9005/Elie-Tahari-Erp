@@ -17,7 +17,7 @@ import { usePathname } from 'next/navigation';
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inventory', label: 'Inventory', icon: Package },
-  { href: '/products', label: 'Products', icon: ShoppingBag },
+  { href: '/products', label: 'Product Catalog', icon: ShoppingBag },
   { href: 'https://elie-tahari.vercel.app/', label: 'UPC code', icon: Barcode },
 ];
 
