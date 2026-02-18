@@ -15,7 +15,7 @@ import { Logo } from '@/components/logo';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'CoutureFlow ERP',
+  title: 'Elie Tahari ERP',
   description: 'Luxury Women Clothing ERP System',
 };
 
@@ -43,7 +43,7 @@ export default function RootLayout({
                   <Logo />
                   <div className="flex flex-col">
                     <span className="font-headline text-lg font-semibold">
-                      CoutureFlow
+                      Elie Tahari
                     </span>
                   </div>
                 </Link>

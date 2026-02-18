@@ -19,12 +19,12 @@ import { LogOut, Settings, User } from 'lucide-react';
 type Role = 'Sales Manager' | 'Admin' | 'Factory Manager' | 'Warehouse Manager' | 'E-commerce Manager' | 'Finance';
 
 const roleEmails: Record<Role, string> = {
-    'Admin': 'admin@coutureflow.com',
-    'Factory Manager': 'factory.manager@coutureflow.com',
-    'Warehouse Manager': 'warehouse.manager@coutureflow.com',
-    'E-commerce Manager': 'ecomm.manager@coutureflow.com',
-    'Finance': 'finance@coutureflow.com',
-    'Sales Manager': 'manager@coutureflow.com', // default
+    'Admin': 'admin@elietahari.com',
+    'Factory Manager': 'factory.manager@elietahari.com',
+    'Warehouse Manager': 'warehouse.manager@elietahari.com',
+    'E-commerce Manager': 'ecomm.manager@elietahari.com',
+    'Finance': 'finance@elietahari.com',
+    'Sales Manager': 'manager@elietahari.com', // default
 }
 
 export function UserNav() {
