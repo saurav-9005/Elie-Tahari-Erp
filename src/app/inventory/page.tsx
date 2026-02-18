@@ -84,7 +84,7 @@ export default function InventoryPage() {
               {factoryInventory.map((order: FactoryInventoryItem) => (
                 <TableRow key={order.poNumber}>
                   <TableCell className="font-medium">{order.poNumber}</TableCell>
-                  <TableCell>{order.style} ({order.color}, {order.size})</TableCell>
+                  <TableCell>{order.styleName} ({order.color}, {order.size})</TableCell>
                   <TableCell>{order.sku}</TableCell>
                   <TableCell>{order.quantity}</TableCell>
                   <TableCell><Badge variant={order.productionStatus === 'Shipped' ? 'default' : 'secondary'}>{order.productionStatus}</Badge></TableCell>

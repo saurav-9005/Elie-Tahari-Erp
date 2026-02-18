@@ -88,7 +88,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="rounded-lg border bg-background p-2 shadow-sm text-sm">
         <p className="font-bold">{label}</p>
-        <p className="text-muted-foreground">{data.style}</p>
+        <p className="text-muted-foreground">{data.styleName}</p>
         <p><span className="font-bold" style={{ color: payload[0].fill }}>●</span> {data.productionStatus}: {data.quantity} units</p>
       </div>
     );

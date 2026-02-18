@@ -1,5 +1,5 @@
 export type FactoryInventoryItem = {
-  style: string;
+  styleName: string;
   sku: string;
   color: string;
   size: string;
@@ -16,7 +16,7 @@ export type FactoryInventoryItem = {
 
 export const factoryInventory: FactoryInventoryItem[] = [
   {
-    style: 'A-line Dress',
+    styleName: 'A-line Dress',
     sku: 'CF-DRS-SLK-01',
     color: 'Midnight Blue',
     size: 'M',
@@ -31,7 +31,7 @@ export const factoryInventory: FactoryInventoryItem[] = [
     expectedArrivalDate: '2024-07-01',
   },
   {
-    style: 'Wool Coat',
+    styleName: 'Wool Coat',
     sku: 'CF-COA-WOL-05',
     color: 'Camel',
     size: 'L',
@@ -46,7 +46,7 @@ export const factoryInventory: FactoryInventoryItem[] = [
     expectedArrivalDate: '2024-06-15',
   },
   {
-    style: 'Cashmere Cardigan',
+    styleName: 'Cashmere Cardigan',
     sku: 'CF-CGN-CSH-03',
     color: 'Heather Grey',
     size: 'S',
@@ -61,7 +61,7 @@ export const factoryInventory: FactoryInventoryItem[] = [
     expectedArrivalDate: '2024-08-01',
   },
   {
-    style: 'Floral Print Maxi Skirt',
+    styleName: 'Floral Print Maxi Skirt',
     sku: 'CF-SKT-MAX-02',
     color: 'Multi',
     size: 'M',
@@ -76,7 +76,7 @@ export const factoryInventory: FactoryInventoryItem[] = [
     expectedArrivalDate: '2024-07-10',
   },
   {
-    style: 'Linen Blouse',
+    styleName: 'Linen Blouse',
     sku: 'CF-BLO-LIN-06',
     color: 'White',
     size: 'L',

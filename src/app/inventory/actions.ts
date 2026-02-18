@@ -28,7 +28,7 @@ function getConsolidatedInventory(): ConsolidatedInventoryItem[] {
         const warehouseItem = warehouseInventory.find(i => i.sku === sku);
         const shopifyItem = shopifyInventory.find(i => i.sku === sku);
 
-        const productName = factoryItem?.style || warehouseItem?.productName || shopifyItem?.productName || 'Unknown Product';
+        const productName = factoryItem?.styleName || warehouseItem?.productName || shopifyItem?.productName || 'Unknown Product';
 
         const factoryQty = factoryItem?.quantity || 0;
         const warehouseQty = warehouseItem?.availableQty || 0;
