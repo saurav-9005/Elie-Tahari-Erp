@@ -10,6 +10,7 @@ import {
   Package,
   ShoppingBag,
   Barcode,
+  TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,6 +19,7 @@ const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inventory', label: 'Inventory', icon: Package },
   { href: '/products', label: 'Product Catalog', icon: ShoppingBag },
+  { href: '/sale-report', label: 'Sale Report', icon: TrendingUp },
   { href: 'https://elie-tahari.vercel.app/', label: 'UPC code', icon: Barcode },
 ];
 
