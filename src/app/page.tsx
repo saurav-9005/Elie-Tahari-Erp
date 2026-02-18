@@ -16,8 +16,6 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-  Pie,
-  PieChart,
   Cell,
 } from 'recharts';
 import {
@@ -70,109 +68,41 @@ const chartConfig = {
     label: 'Value ($)',
     color: 'hsl(var(--chart-2))',
   },
-  'In Stock': {
-    label: 'In Stock',
-    color: 'hsl(var(--chart-2))',
-  },
-  'Low Stock': {
-    label: 'Low Stock',
+  'In Production': {
+    label: 'In Production',
     color: 'hsl(var(--chart-4))',
   },
-  'Out of Stock': {
-    label: 'Out of Stock',
-    color: 'hsl(var(--chart-1))',
-  },
-  Overstocked: {
-    label: 'Overstocked',
+  'Awaiting Shipment': {
+    label: 'Awaiting Shipment',
     color: 'hsl(var(--chart-5))',
+  },
+  Shipped: {
+    label: 'Shipped',
+    color: 'hsl(var(--chart-2))',
   },
 };
 
-export default function Dashboard() {
-  const inventoryStatusSummary = useMemo(() => {
-    function getConsolidatedInventory(): ConsolidatedInventoryItem[] {
-      const inventoryMap = new Map<string, ConsolidatedInventoryItem>();
-
-      const allSkus = new Set([
-        ...factoryInventory.map((i) => i.sku),
-        ...warehouseInventory.map((i) => i.sku),
-        ...shopifyInventory.map((i) => i.sku),
-      ]);
-
-      for (const sku of allSkus) {
-        const factoryItem = factoryInventory.find((i) => i.sku === sku);
-        const warehouseItem = warehouseInventory.find((i) => i.sku === sku);
-        const shopifyItem = shopifyInventory.find((i) => i.sku === sku);
-
-        const productName =
-          factoryItem?.style ||
-          warehouseItem?.productName ||
-          shopifyItem?.productName ||
-          'Unknown Product';
-
-        const factoryQty = factoryItem?.quantity || 0;
-        const warehouseQty = warehouseItem?.availableQty || 0;
-        const shopifySellableQty =
-          shopifyItem?.inventory.reduce(
-            (acc, loc) => acc + loc.available,
-            0
-          ) || 0;
-
-        const totalSellable = warehouseQty + shopifySellableQty;
-
-        let status: ConsolidatedInventoryItem['status'] = 'In Stock';
-        if (totalSellable <= 0) {
-          status = 'Out of Stock';
-        } else if (totalSellable < 10) {
-          status = 'Low Stock';
-        } else if (totalSellable > 200) {
-          status = 'Overstocked';
-        }
-
-        inventoryMap.set(sku, {
-          sku,
-          productName,
-          factoryQty,
-          warehouseQty,
-          shopifySellableQty,
-          totalSellable,
-          status,
-        });
-      }
-
-      return Array.from(inventoryMap.values());
-    }
-
-    const statusCounts = getConsolidatedInventory().reduce(
-      (acc, item) => {
-        acc[item.status] = (acc[item.status] || 0) + 1;
-        return acc;
-      },
-      {} as Record<ConsolidatedInventoryItem['status'], number>
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="rounded-lg border bg-background p-2 shadow-sm text-sm">
+        <p className="font-bold">{label}</p>
+        <p className="text-muted-foreground">{data.style}</p>
+        <p><span className="font-bold" style={{ color: payload[0].fill }}>●</span> {data.productionStatus}: {data.quantity} units</p>
+      </div>
     );
+  }
 
-    return [
-      {
-        name: 'In Stock',
-        value: statusCounts['In Stock'] || 0,
-        fill: 'var(--color-in-stock)',
-      },
-      {
-        name: 'Low Stock',
-        value: statusCounts['Low Stock'] || 0,
-        fill: 'var(--color-low-stock)',
-      },
-      {
-        name: 'Out of Stock',
-        value: statusCounts['Out of Stock'] || 0,
-        fill: 'var(--color-out-of-stock)',
-      },
-      {
-        name: 'Overstocked',
-        value: statusCounts['Overstocked'] || 0,
-        fill: 'var(--color-overstocked)',
-      },
-    ].filter((item) => item.value > 0);
+  return null;
+};
+
+
+export default function Dashboard() {
+  const topFactoryPOs = useMemo(() => {
+    return factoryInventory
+      .sort((a, b) => b.quantity - a.quantity)
+      .slice(0, 5);
   }, []);
 
   return (
@@ -243,33 +173,52 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Inventory Status Breakdown</CardTitle>
-            <CardDescription>Number of SKUs by current inventory status.</CardDescription>
+            <CardTitle>Top 5 Factory POs</CardTitle>
+            <CardDescription>
+              Largest purchase orders from the factory by quantity.
+            </CardDescription>
           </CardHeader>
-          <CardContent className="flex items-center justify-center">
+          <CardContent className="flex flex-col gap-4">
             <ChartContainer config={chartConfig} className="h-64 w-full">
-              <PieChart>
-                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                <Pie
-                  data={inventoryStatusSummary}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  strokeWidth={2}
-                >
-                  {inventoryStatusSummary.map((entry) => (
-                    <Cell
-                      key={entry.name}
-                      fill={entry.fill}
-                      className="[&>*]:stroke-background"
-                    />
+              <BarChart data={topFactoryPOs} margin={{ left: -20, bottom: -10 }}>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey="poNumber"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  tickFormatter={(value) => value.slice(-3)}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={<CustomTooltip />}
+                />
+                <Bar dataKey="quantity" radius={5}>
+                  {topFactoryPOs.map((entry) => (
+                    <Cell key={`cell-${entry.poNumber}`} fill={chartConfig[entry.productionStatus as keyof typeof chartConfig].color} />
                   ))}
-                </Pie>
-              </PieChart>
+                </Bar>
+              </BarChart>
             </ChartContainer>
+            <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-2))' }} />
+                <span>Shipped</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-5))' }} />
+                <span>Awaiting Shipment</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: 'hsl(var(--chart-4))' }} />
+                <span>In Production</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
