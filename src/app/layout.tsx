@@ -13,6 +13,7 @@ import { UserNav } from '@/components/user-nav';
 import { Toaster } from '@/components/ui/toaster';
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 export const metadata: Metadata = {
   title: 'Elie Tahari ERP',
@@ -35,32 +36,34 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <SidebarProvider>
-          <Sidebar>
-            <SidebarHeader>
-              <Button variant="ghost" className="h-auto justify-start p-2" asChild>
-                <Link href="/">
-                  <Logo />
-                  <div className="flex flex-col">
-                    <span className="font-headline text-lg font-semibold">
-                      Elie Tahari
-                    </span>
-                  </div>
-                </Link>
-              </Button>
-            </SidebarHeader>
-            <SidebarContent>
-              <MainNav />
-            </SidebarContent>
-          </Sidebar>
-          <SidebarInset>
-            <header className="flex h-14 items-center justify-end gap-4 border-b bg-background/95 px-4 backdrop-blur-sm lg:px-6">
-              <UserNav />
-            </header>
-            <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
-          </SidebarInset>
-        </SidebarProvider>
-        <Toaster />
+        <FirebaseClientProvider>
+          <SidebarProvider>
+            <Sidebar>
+              <SidebarHeader>
+                <Button variant="ghost" className="h-auto justify-start p-2" asChild>
+                  <Link href="/">
+                    <Logo />
+                    <div className="flex flex-col">
+                      <span className="font-headline text-lg font-semibold">
+                        Elie Tahari
+                      </span>
+                    </div>
+                  </Link>
+                </Button>
+              </SidebarHeader>
+              <SidebarContent>
+                <MainNav />
+              </SidebarContent>
+            </Sidebar>
+            <SidebarInset>
+              <header className="flex h-14 items-center justify-end gap-4 border-b bg-background/95 px-4 backdrop-blur-sm lg:px-6">
+                <UserNav />
+              </header>
+              <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
+            </SidebarInset>
+          </SidebarProvider>
+          <Toaster />
+        </FirebaseClientProvider>
       </body>
     </html>
   );

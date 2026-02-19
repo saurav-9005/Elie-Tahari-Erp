@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -25,8 +27,16 @@ import { Badge } from '@/components/ui/badge';
 
 
 export default function InventoryPage() {
+    const { user, isUserLoading: isUserLoadingAuth } = useUser();
+    const router = useRouter();
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!isUserLoadingAuth && !user) {
+          router.push('/login');
+        }
+    }, [user, isUserLoadingAuth, router]);
 
     async function handleSendReport() {
         setIsLoading(true);
@@ -44,6 +54,14 @@ export default function InventoryPage() {
             });
         }
         setIsLoading(false);
+    }
+    
+    if (isUserLoadingAuth || !user) {
+      return (
+          <div className="flex h-[calc(100vh-theme(spacing.14))] items-center justify-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+      );
     }
 
   return (

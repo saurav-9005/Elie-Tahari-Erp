@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -23,7 +25,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { DollarSign, Package, PackageX, Warehouse } from 'lucide-react';
+import { DollarSign, Loader2, Package, PackageX, Warehouse } from 'lucide-react';
 import { inventoryValueData } from '@/lib/data';
 import {
   factoryInventory,
@@ -99,11 +101,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 
 export default function Dashboard() {
+  const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isUserLoading, router]);
+
   const topFactoryPOs = useMemo(() => {
     return factoryInventory
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
   }, []);
+
+  if (isUserLoading || !user) {
+    return (
+        <div className="flex h-[calc(100vh-theme(spacing.14))] items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
