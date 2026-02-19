@@ -12,7 +12,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { factoryInventory, warehouseInventory, shopifyInventory } from '@/lib/inventory-data';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { factoryInventory, warehouseInventory, shopifyInventory, type FactoryInventoryItem, type WarehouseInventoryItem, type ShopifyInventoryItem } from '@/lib/inventory-data';
 import { generateAndSendReport } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, ArrowRight, Loader2, Package, ShoppingCart, Truck } from 'lucide-react';
@@ -171,6 +180,122 @@ export default function InventoryPage() {
           </CardFooter>
         </Card>
       </div>
+
+        <div className="space-y-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Recent Factory Inventory</CardTitle>
+                    <CardDescription>Showing the 5 most recent purchase orders.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>PO Number</TableHead>
+                        <TableHead>Product</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Quantity</TableHead>
+                        <TableHead>Production Status</TableHead>
+                        <TableHead>Expected Arrival</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {factoryInventory.slice(0, 5).map((order: FactoryInventoryItem) => (
+                        <TableRow key={order.poNumber}>
+                        <TableCell className="font-medium">{order.poNumber}</TableCell>
+                        <TableCell>{order.styleName} ({order.color}, {order.size})</TableCell>
+                        <TableCell>{order.sku}</TableCell>
+                        <TableCell>{order.quantity}</TableCell>
+                        <TableCell><Badge variant={order.productionStatus === 'Shipped' ? 'default' : 'secondary'}>{order.productionStatus}</Badge></TableCell>
+                        <TableCell>{order.expectedArrivalDate}</TableCell>
+                        <TableCell className="text-right">
+                            <Button asChild variant="ghost" size="sm">
+                            <Link href={`/inventory/factory/${order.poNumber}`}>View More</Link>
+                            </Button>
+                        </TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>WMS Inventory Snapshot</CardTitle>
+                    <CardDescription>A quick look at current warehouse stock.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Product</TableHead>
+                            <TableHead>SKU</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead className="text-right">Available</TableHead>
+                            <TableHead className="text-right">Reserved</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {warehouseInventory.slice(0, 5).map((item: WarehouseInventoryItem) => (
+                            <TableRow key={item.sku}>
+                            <TableCell className="font-medium">{item.productName}</TableCell>
+                            <TableCell>{item.sku}</TableCell>
+                            <TableCell>{item.warehouseLocation}</TableCell>
+                            <TableCell className="text-right">{item.availableQty}</TableCell>
+                            <TableCell className="text-right">{item.reservedQty}</TableCell>
+                            <TableCell className="text-right">
+                                <Button asChild variant="ghost" size="sm">
+                                <Link href={`/inventory/wms/${item.sku}`}>View More</Link>
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Shopify Inventory Snapshot</CardTitle>
+                    <CardDescription>A quick look at sellable stock on Shopify.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>SKU</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead className="text-right">Available</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {shopifyInventory.flatMap((product: ShopifyInventoryItem) =>
+                        product.inventory.map(inv => (
+                        <TableRow key={`${product.sku}-${inv.location}`}>
+                            <TableCell className="font-medium">{product.productName}</TableCell>
+                            <TableCell>{product.sku}</TableCell>
+                            <TableCell><Badge variant="outline">{inv.location}</Badge></TableCell>
+                            <TableCell className="text-right">{inv.available}</TableCell>
+                            <TableCell className="text-right">
+                            <Button asChild variant="ghost" size="sm">
+                                <Link href={`/inventory/shopify/${product.sku}/${encodeURIComponent(inv.location)}`}>View More</Link>
+                            </Button>
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    ).slice(0,5)}
+                    </TableBody>
+                </Table>
+                </CardContent>
+            </Card>
+        </div>
+
     </div>
   );
 }
