@@ -24,6 +24,7 @@ import { generateAndSendReport } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
 
 export default function InventoryPage() {
@@ -96,6 +97,7 @@ export default function InventoryPage() {
                 <TableHead>Quantity</TableHead>
                 <TableHead>Production Status</TableHead>
                 <TableHead>Expected Arrival</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -107,6 +109,11 @@ export default function InventoryPage() {
                   <TableCell>{order.quantity}</TableCell>
                   <TableCell><Badge variant={order.productionStatus === 'Shipped' ? 'default' : 'secondary'}>{order.productionStatus}</Badge></TableCell>
                   <TableCell>{order.expectedArrivalDate}</TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/inventory/factory/${order.poNumber}`}>View More</Link>
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -130,6 +137,7 @@ export default function InventoryPage() {
                 <TableHead className="text-right">Reserved</TableHead>
                 <TableHead className="text-right">Inbound</TableHead>
                 <TableHead className="text-right">Damaged</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -142,6 +150,11 @@ export default function InventoryPage() {
                   <TableCell className="text-right">{item.reservedQty}</TableCell>
                   <TableCell className="text-right">{item.inboundQty}</TableCell>
                   <TableCell className="text-right">{item.damagedQty}</TableCell>
+                  <TableCell className="text-right">
+                    <Button asChild variant="ghost" size="sm">
+                       <Link href={`/inventory/wms/${item.sku}`}>View More</Link>
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -164,6 +177,7 @@ export default function InventoryPage() {
                   <TableHead className="text-right">Available</TableHead>
                   <TableHead className="text-right">Committed</TableHead>
                   <TableHead className="text-right">Incoming</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -176,6 +190,11 @@ export default function InventoryPage() {
                             <TableCell className="text-right">{inv.available}</TableCell>
                             <TableCell className="text-right">{inv.committed}</TableCell>
                             <TableCell className="text-right">{inv.incoming}</TableCell>
+                            <TableCell className="text-right">
+                               <Button asChild variant="ghost" size="sm">
+                                <Link href={`/inventory/shopify/${product.sku}/${encodeURIComponent(inv.location)}`}>View More</Link>
+                               </Button>
+                            </TableCell>
                         </TableRow>
                     ))
                 )}
