@@ -29,7 +29,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
 const formSchema = z.object({
@@ -42,7 +42,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLinkSent, setIsLinkSent] = useState(false);
+  const [isEmailSent, setIsEmailSent] = useState(false);
   const [isProcessingLink, setIsProcessingLink] = useState(false);
 
   // Handle the sign-in link completion
@@ -70,7 +70,7 @@ export default function LoginPage() {
             toast({
               variant: 'destructive',
               title: 'Login Failed',
-              description: error.message,
+              description: "The sign-in link may have expired or been used already. Please try again.",
             });
             setIsProcessingLink(false);
           });
@@ -111,11 +111,11 @@ export default function LoginPage() {
     try {
       await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
       window.localStorage.setItem('emailForSignIn', values.email);
-      setIsLinkSent(true);
+      setIsEmailSent(true);
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'Error sending link',
+        title: 'Error sending email',
         description: error.message,
       });
     } finally {
@@ -128,7 +128,7 @@ export default function LoginPage() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="text-muted-foreground">
-            {isProcessingLink ? 'Verifying sign-in link...' : 'Loading...'}
+            {isProcessingLink ? 'Verifying sign-in...' : 'Loading...'}
         </p>
       </div>
     );
@@ -143,21 +143,26 @@ export default function LoginPage() {
           </span>
        </div>
       <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Passwordless Login</CardTitle>
-          <CardDescription>
-            {isLinkSent
-                ? 'Check your email for a sign-in link.'
-                : 'Enter your email to get a magic link.'
-            }
-          </CardDescription>
+        <CardHeader className="text-center">
+          {isEmailSent ? (
+            <>
+              <MailCheck className="mx-auto h-12 w-12 text-green-500" />
+              <CardTitle className="text-xl">Check your email</CardTitle>
+              <CardDescription>
+                We sent a sign-in link to your email address. Click the link to complete login.
+              </CardDescription>
+            </>
+          ) : (
+            <>
+              <CardTitle className="text-xl">Passwordless Login</CardTitle>
+              <CardDescription>
+                Enter your email below to receive a secure link to sign in.
+              </CardDescription>
+            </>
+          )}
         </CardHeader>
         <CardContent>
-          {isLinkSent ? (
-            <div className="text-center text-sm text-muted-foreground">
-              <p>A magic link has been sent to the email address you provided. Click the link to sign in.</p>
-            </div>
-          ) : (
+          {!isEmailSent && (
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -174,7 +179,7 @@ export default function LoginPage() {
                   )}
                 />
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : 'Send Magic Link'}
+                  {isSubmitting ? <Loader2 className="animate-spin" /> : 'Send Sign-in Link'}
                 </Button>
               </form>
             </Form>
