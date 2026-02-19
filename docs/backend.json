@@ -1,0 +1,1070 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents an internal user or operator of the CoutureFlow ERP system, whose authentication is handled by an external system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user, used for communication and identification.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
+      "type": "object",
+      "description": "Represents an external customer who purchases luxury clothing items through integrated storefronts like Shopify.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Customer entity."
+        },
+        "shopifyCustomerId": {
+          "type": "string",
+          "description": "Reference to the customer's ID in the Shopify system for synchronization. (Relationship: Customer 1:1 ShopifyCustomer)"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the customer."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the customer."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the customer.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number of the customer."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the customer record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the customer record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "CustomerAddress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CustomerAddress",
+      "type": "object",
+      "description": "Represents a specific address (e.g., billing, shipping) associated with a customer.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the CustomerAddress entity."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the customer this address belongs to. (Relationship: Customer 1:N CustomerAddress)"
+        },
+        "addressType": {
+          "type": "string",
+          "description": "The type of address (e.g., 'billing', 'shipping', 'default')."
+        },
+        "street1": {
+          "type": "string",
+          "description": "The primary street address line."
+        },
+        "street2": {
+          "type": "string",
+          "description": "The secondary street address line (e.g., apartment, suite number)."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city of the address."
+        },
+        "stateProvince": {
+          "type": "string",
+          "description": "The state or province of the address."
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "The postal code or ZIP code of the address."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of the address."
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Indicates if this is the customer's default address for its type."
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "addressType",
+        "street1",
+        "city",
+        "stateProvince",
+        "postalCode",
+        "country"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a luxury women's clothing item, serving as a parent for specific variants (SKUs) and containing common attributes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "shopifyProductId": {
+          "type": "string",
+          "description": "Reference to the product's ID in the Shopify system for synchronization. (Relationship: Product 1:1 ShopifyProduct)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product (e.g., 'Silk Midi Dress')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A rich description of the product, potentially including markdown or HTML."
+        },
+        "brand": {
+          "type": "string",
+          "description": "The brand or designer of the product."
+        },
+        "material": {
+          "type": "string",
+          "description": "The primary material composition of the product (e.g., '100% Silk')."
+        },
+        "careInstructions": {
+          "type": "string",
+          "description": "Instructions for care and maintenance of the garment."
+        },
+        "priceCurrency": {
+          "type": "string",
+          "description": "The currency code for the product's pricing (e.g., 'USD', 'EUR')."
+        },
+        "defaultVariantId": {
+          "type": "string",
+          "description": "Reference to the ProductVariant that is considered the default or primary variant for this product. (Relationship: Product 1:1 ProductVariant)"
+        },
+        "categoryIds": {
+          "type": "array",
+          "description": "References to ProductCategory entities that this product belongs to. (Relationship: Product N:N ProductCategory)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was last updated.",
+          "format": "date-time"
+        },
+        "publishedAt": {
+          "type": "string",
+          "description": "Timestamp when the product was first published and made visible on storefronts.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "brand",
+        "material",
+        "careInstructions",
+        "priceCurrency",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ProductVariant": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProductVariant",
+      "type": "object",
+      "description": "Represents a specific SKU (Stock Keeping Unit) for a product, detailing attributes like size, color, and price.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ProductVariant entity."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the parent Product entity. (Relationship: Product 1:N ProductVariant)"
+        },
+        "shopifyVariantId": {
+          "type": "string",
+          "description": "Reference to the variant's ID in the Shopify system for synchronization. (Relationship: ProductVariant 1:1 ShopifyVariant)"
+        },
+        "sku": {
+          "type": "string",
+          "description": "The Stock Keeping Unit, a unique identifier for inventory management."
+        },
+        "color": {
+          "type": "string",
+          "description": "The color attribute of the variant."
+        },
+        "size": {
+          "type": "string",
+          "description": "The size attribute of the variant (e.g., 'S', 'M', 'L', 'US 6')."
+        },
+        "price": {
+          "type": "number",
+          "description": "The current selling price of this variant."
+        },
+        "compareAtPrice": {
+          "type": "number",
+          "description": "The original price for comparison, often used to show discounts."
+        },
+        "weightValue": {
+          "type": "number",
+          "description": "The weight of the variant, used for shipping calculations."
+        },
+        "weightUnit": {
+          "type": "string",
+          "description": "The unit of measurement for the weight (e.g., 'kg', 'lb')."
+        },
+        "barcode": {
+          "type": "string",
+          "description": "The barcode (e.g., UPC, EAN) for the variant."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the variant is currently active and available for sale."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the product variant record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the product variant record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "sku",
+        "color",
+        "size",
+        "price",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ProductImage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProductImage",
+      "type": "object",
+      "description": "Represents an image asset associated with a product or a specific product variant.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ProductImage entity."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product entity this image belongs to. (Relationship: Product 1:N ProductImage)"
+        },
+        "variantId": {
+          "type": "string",
+          "description": "Optional reference to a ProductVariant if the image is specific to a variant. (Relationship: ProductVariant 1:N ProductImage)"
+        },
+        "url": {
+          "type": "string",
+          "description": "The URL where the image file is hosted.",
+          "format": "uri"
+        },
+        "altText": {
+          "type": "string",
+          "description": "Alternative text for the image, important for accessibility and SEO."
+        },
+        "position": {
+          "type": "number",
+          "description": "The display order of the image among other images for the same product/variant."
+        },
+        "isPrimary": {
+          "type": "boolean",
+          "description": "Indicates if this is the main image displayed for the product or variant."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the product image record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the product image record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "url",
+        "altText",
+        "position",
+        "isPrimary",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ProductCategory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ProductCategory",
+      "type": "object",
+      "description": "Represents a category for organizing products (e.g., 'Dresses', 'Skirts', 'Outerwear').",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ProductCategory entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the category (e.g., 'Dresses')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description for the category."
+        },
+        "parentCategoryId": {
+          "type": "string",
+          "description": "Reference to a parent category, enabling hierarchical category structures. (Relationship: ProductCategory 1:N ProductCategory)"
+        },
+        "productIds": {
+          "type": "array",
+          "description": "References to Product entities that belong to this category. (Relationship: ProductCategory N:N Product)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the category record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the category record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer's purchase transaction, including details about items, shipping, and payment status.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order entity."
+        },
+        "shopifyOrderId": {
+          "type": "string",
+          "description": "Reference to the order's ID in the Shopify system for synchronization. (Relationship: Order 1:1 ShopifyOrder)"
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer who placed the order. (Relationship: Customer 1:N Order)"
+        },
+        "orderNumber": {
+          "type": "string",
+          "description": "A human-readable, unique identifier for the order."
+        },
+        "orderStatus": {
+          "type": "string",
+          "description": "The current status of the order (e.g., 'pending', 'processing', 'fulfilled', 'shipped', 'delivered', 'cancelled')."
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "Timestamp when the order was placed.",
+          "format": "date-time"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total monetary amount of the order, including taxes and shipping."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency code of the order's total amount (e.g., 'USD')."
+        },
+        "shippingAddressId": {
+          "type": "string",
+          "description": "Reference to the OrderAddress used for shipping this order. (Relationship: Order 1:N OrderAddress)"
+        },
+        "billingAddressId": {
+          "type": "string",
+          "description": "Reference to the OrderAddress used for billing this order. (Relationship: Order 1:N OrderAddress)"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The current payment status of the order (e.g., 'paid', 'pending', 'refunded', 'failed')."
+        },
+        "fulfillmentStatus": {
+          "type": "string",
+          "description": "The current fulfillment status of the order (e.g., 'unfulfilled', 'partial', 'fulfilled')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Internal notes or comments related to the order."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "orderNumber",
+        "orderStatus",
+        "orderDate",
+        "totalAmount",
+        "currency",
+        "shippingAddressId",
+        "billingAddressId",
+        "paymentStatus",
+        "fulfillmentStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderAddress": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderAddress",
+      "type": "object",
+      "description": "Represents a specific address (shipping or billing) captured at the time an order was placed, providing a snapshot of the address.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderAddress entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the Order this address is associated with. (Relationship: Order 1:N OrderAddress)"
+        },
+        "addressType": {
+          "type": "string",
+          "description": "The type of address within the order context (e.g., 'billing', 'shipping')."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the recipient/payer at this address."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the recipient/payer at this address."
+        },
+        "company": {
+          "type": "string",
+          "description": "The company name associated with the address, if applicable."
+        },
+        "street1": {
+          "type": "string",
+          "description": "The primary street address line."
+        },
+        "street2": {
+          "type": "string",
+          "description": "The secondary street address line."
+        },
+        "city": {
+          "type": "string",
+          "description": "The city of the address."
+        },
+        "stateProvince": {
+          "type": "string",
+          "description": "The state or province of the address."
+        },
+        "postalCode": {
+          "type": "string",
+          "description": "The postal code or ZIP code of the address."
+        },
+        "country": {
+          "type": "string",
+          "description": "The country of the address."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number for contacting the recipient at this address."
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "addressType",
+        "firstName",
+        "lastName",
+        "street1",
+        "city",
+        "stateProvince",
+        "postalCode",
+        "country"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents a single product variant and its quantity within a specific order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the parent Order entity. (Relationship: Order 1:N OrderItem)"
+        },
+        "productVariantId": {
+          "type": "string",
+          "description": "Reference to the specific ProductVariant ordered. (Relationship: ProductVariant 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the product variant ordered."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The price of a single unit of the product variant at the time of order."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "The total price for this order item (quantity * unitPrice)."
+        },
+        "productName": {
+          "type": "string",
+          "description": "A snapshot of the product name at the time of order."
+        },
+        "variantDescription": {
+          "type": "string",
+          "description": "A snapshot of the variant details (e.g., 'Red, Large') at the time of order."
+        },
+        "sku": {
+          "type": "string",
+          "description": "A snapshot of the product variant's SKU at the time of order."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productVariantId",
+        "quantity",
+        "unitPrice",
+        "totalPrice",
+        "productName",
+        "variantDescription",
+        "sku",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Warehouse": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Warehouse",
+      "type": "object",
+      "description": "Represents a physical warehouse location used for inventory storage and order fulfillment.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Warehouse entity."
+        },
+        "wmsId": {
+          "type": "string",
+          "description": "Reference to the warehouse's ID in the Warehouse Management System (WMS) for synchronization. (Relationship: Warehouse 1:1 WMSWarehouse)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the warehouse (e.g., 'Main Distribution Center')."
+        },
+        "address": {
+          "type": "string",
+          "description": "The full address of the warehouse."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The contact email for the warehouse operations.",
+          "format": "email"
+        },
+        "contactPhone": {
+          "type": "string",
+          "description": "The contact phone number for the warehouse operations."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the warehouse is currently active for operations."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the warehouse record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the warehouse record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Shipment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Shipment",
+      "type": "object",
+      "description": "Tracks the physical shipment of items for an order, allowing for partial fulfillment and status updates.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Shipment entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the parent Order this shipment belongs to. (Relationship: Order 1:N Shipment)"
+        },
+        "warehouseId": {
+          "type": "string",
+          "description": "Reference to the Warehouse from which the shipment originated. (Relationship: Warehouse 1:N Shipment)"
+        },
+        "carrier": {
+          "type": "string",
+          "description": "The shipping carrier used for this shipment (e.g., 'UPS', 'FedEx', 'DHL')."
+        },
+        "trackingNumber": {
+          "type": "string",
+          "description": "The tracking number provided by the shipping carrier."
+        },
+        "trackingUrl": {
+          "type": "string",
+          "description": "The URL where the shipment can be tracked.",
+          "format": "uri"
+        },
+        "shipmentStatus": {
+          "type": "string",
+          "description": "The current status of the shipment (e.g., 'pending', 'shipped', 'in_transit', 'delivered', 'exception')."
+        },
+        "shippedDate": {
+          "type": "string",
+          "description": "Timestamp when the shipment was dispatched.",
+          "format": "date-time"
+        },
+        "estimatedDeliveryDate": {
+          "type": "string",
+          "description": "The estimated date of delivery for the shipment.",
+          "format": "date-time"
+        },
+        "deliveredDate": {
+          "type": "string",
+          "description": "Timestamp when the shipment was successfully delivered.",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the shipment record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the shipment record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "warehouseId",
+        "carrier",
+        "trackingNumber",
+        "shipmentStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InventoryItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InventoryItem",
+      "type": "object",
+      "description": "Represents the stock level of a specific product variant at a particular warehouse location, often synchronized with a WMS.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the InventoryItem entity."
+        },
+        "productVariantId": {
+          "type": "string",
+          "description": "Reference to the ProductVariant whose inventory is being tracked. (Relationship: ProductVariant 1:N InventoryItem)"
+        },
+        "warehouseId": {
+          "type": "string",
+          "description": "Reference to the Warehouse where this inventory item is stored. (Relationship: Warehouse 1:N InventoryItem)"
+        },
+        "wmsInventoryId": {
+          "type": "string",
+          "description": "Reference to the inventory item's ID in the Warehouse Management System (WMS) for synchronization. (Relationship: InventoryItem 1:1 WMSInventory)"
+        },
+        "quantityAvailable": {
+          "type": "number",
+          "description": "The current quantity of this product variant physically available for sale."
+        },
+        "quantityReserved": {
+          "type": "number",
+          "description": "The quantity of this product variant that is reserved for existing orders."
+        },
+        "quantityIncoming": {
+          "type": "number",
+          "description": "The quantity of this product variant expected to arrive from suppliers or transfers."
+        },
+        "minimumStockLevel": {
+          "type": "number",
+          "description": "The minimum stock level for this variant at this warehouse to trigger reorder alerts."
+        },
+        "lastStockUpdate": {
+          "type": "string",
+          "description": "Timestamp of the last known inventory update for this item.",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the inventory item record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the inventory item record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productVariantId",
+        "warehouseId",
+        "quantityAvailable",
+        "quantityReserved",
+        "quantityIncoming",
+        "lastStockUpdate",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection for internal ERP operators. Authentication is handled via passwordless (SOS) login. Each document represents a single operator. Authorization rules will typically allow an operator to manage their own profile based on 'request.auth.uid'.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the ERP operator, typically matching 'request.auth.uid'."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Top-level collection for external customers, often synchronized from Shopify. All authenticated ERP operators can access these records.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique ID of the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}/addresses/{addressId}",
+        "definition": {
+          "entityName": "CustomerAddress",
+          "schema": {
+            "$ref": "#/backend/entities/CustomerAddress"
+          },
+          "description": "Subcollection for customer addresses. Each address document includes 'customerId' for authorization independence. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique ID of the parent customer."
+            },
+            {
+              "name": "addressId",
+              "description": "The unique ID of the customer address."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Top-level collection for luxury clothing products, acting as a parent for variants and images. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique ID of the product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}/variants/{variantId}",
+        "definition": {
+          "entityName": "ProductVariant",
+          "schema": {
+            "$ref": "#/backend/entities/ProductVariant"
+          },
+          "description": "Subcollection for product variants (SKUs). Each variant document includes 'productId' for authorization independence. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique ID of the parent product."
+            },
+            {
+              "name": "variantId",
+              "description": "The unique ID of the product variant."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}/images/{imageId}",
+        "definition": {
+          "entityName": "ProductImage",
+          "schema": {
+            "$ref": "#/backend/entities/ProductImage"
+          },
+          "description": "Subcollection for product images. Each image document includes 'productId' for authorization independence. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique ID of the parent product."
+            },
+            {
+              "name": "imageId",
+              "description": "The unique ID of the product image."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/product_categories/{categoryId}",
+        "definition": {
+          "entityName": "ProductCategory",
+          "schema": {
+            "$ref": "#/backend/entities/ProductCategory"
+          },
+          "description": "Top-level collection for product categories, supporting hierarchical organization. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique ID of the product category."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Top-level collection for customer orders. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique ID of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}/addresses/{addressId}",
+        "definition": {
+          "entityName": "OrderAddress",
+          "schema": {
+            "$ref": "#/backend/entities/OrderAddress"
+          },
+          "description": "Subcollection for order-specific shipping and billing addresses. Each address document includes 'orderId' for authorization independence. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique ID of the parent order."
+            },
+            {
+              "name": "addressId",
+              "description": "The unique ID of the order address."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}/items/{itemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Subcollection for individual items within an order. Each item document includes 'orderId' for authorization independence. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique ID of the parent order."
+            },
+            {
+              "name": "itemId",
+              "description": "The unique ID of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/warehouses/{warehouseId}",
+        "definition": {
+          "entityName": "Warehouse",
+          "schema": {
+            "$ref": "#/backend/entities/Warehouse"
+          },
+          "description": "Top-level collection for physical warehouse locations. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "warehouseId",
+              "description": "The unique ID of the warehouse."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/shipments/{shipmentId}",
+        "definition": {
+          "entityName": "Shipment",
+          "schema": {
+            "$ref": "#/backend/entities/Shipment"
+          },
+          "description": "Top-level collection for tracking product shipments. Includes 'orderId' and 'warehouseId' for cross-referencing. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "shipmentId",
+              "description": "The unique ID of the shipment."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/inventory_items/{inventoryItemId}",
+        "definition": {
+          "entityName": "InventoryItem",
+          "schema": {
+            "$ref": "#/backend/entities/InventoryItem"
+          },
+          "description": "Top-level collection for inventory stock levels, linking product variants and warehouses. Includes 'productVariantId' and 'warehouseId' for efficient queries and authorization context. Accessible by all authenticated ERP operators.",
+          "params": [
+            {
+              "name": "inventoryItemId",
+              "description": "The unique ID of the inventory item."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure for the CoutureFlow ERP system is designed to provide secure, scalable, and debuggable access, prioritizing Authorization Independence and QAP (Query-as-Permission) compliance. Since the user requested to remove roles for now and implement passwordless login, the initial authorization model assumes that any authenticated ERP operator (user) has access to the core ERP data, while their own user profile is restricted.\n\n**Authorization Independence via Denormalization:**\nEach subcollection document (e.g., `CustomerAddress`, `ProductVariant`, `ProductImage`, `OrderAddress`, `OrderItem`) explicitly includes the ID of its parent entity (`customerId`, `productId`, `orderId`) as a field. For instance, a `CustomerAddress` document at `/customers/{customerId}/addresses/{addressId}` will contain a `customerId` field matching the `{customerId}` wildcard in the path. This denormalization is crucial for security rules, as it allows authorization checks to be performed directly on the `resource.data` of the document being accessed, without requiring a `get()` operation on a parent document. This ensures that operations (like creating a new address for a customer) can be atomic and rules remain efficient and easy to debug. This design fully supports atomic writes and eliminates hard-to-debug hierarchical authorization dependencies.\n\n**QAPs (Rules are not Filters) and Structural Segregation:**\n\n1.  **Homogeneous Security Posture:** Most core ERP data entities (`Product`, `Customer`, `Order`, `Warehouse`, `Shipment`, `InventoryItem`, `ProductCategory`) are placed in top-level collections (e.g., `/products`, `/customers`). This design choice reflects the typical ERP access pattern where most operational data is accessible to all authenticated internal operators. By having a uniform security posture for these collections (e.g., `allow read, write: request.auth.uid != null`), `list` operations become inherently QAP-compliant. An authenticated ERP user querying `/products` will securely receive all products without the need for additional server-side filtering logic or complex, insecure client-side queries.\n2.  **Path-Based Ownership for User Data:** For the `User` entity, which represents an ERP operator, the path `/users/{userId}` is used. This standard pattern ensures that an operator can only read/write their own user profile, as `request.auth.uid` must match `{userId}` in the path. This structure naturally supports QAPs for personal user data. Subcollections under `/users/{userId}` (if any were introduced later for user-specific settings) would also inherit this clear, path-based ownership, ensuring that listing operations only return data relevant to the authenticated user.\n3.  **Nested Data for Direct Relationships:** Subcollections like `/customers/{customerId}/addresses/{addressId}` and `/products/{productId}/variants/{variantId}` naturally group related data. Because the parent ID (`customerId`, `productId`) is denormalized into the child document, security rules for these subcollections can perform direct checks (e.g., `resource.data.customerId == customerId`) to enforce the relationship and maintain data integrity, contributing to QAP-compliance if granular access were needed. For the current simplified model, all authenticated operators can access all customer addresses, for example."
+  }
+}

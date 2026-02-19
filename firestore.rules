@@ -1,0 +1,272 @@
+/**
+ * Core Philosophy: This ruleset enforces a two-tiered security model for the CoutureFlow ERP system.
+ * 1. User Data Privacy: Access to the /users collection is strictly limited. Authenticated users can only
+ *    create, read, update, and delete their own user document. Listing users is disabled to protect privacy.
+ * 2. Trusted Operator Access: For all other data (customers, products, orders, etc.), any authenticated
+ *    internal operator is granted full read and write permissions. This reflects a trusted internal system
+ *    where operators need broad access to manage business operations.
+ *
+ * Data Structure: The data is organized into top-level collections for major entities (e.g., /products, /customers, /orders)
+ * and nested subcollections for directly related data (e.g., /customers/{customerId}/addresses). This structure
+ * supports both broad queries and granular data grouping.
+ *
+ * Key Security Decisions:
+ * - Unauthenticated access is denied everywhere.
+ * - The ability to list users in the /users collection is explicitly disabled to prevent data leakage.
+ * - The primary authorization check for all business data is simply whether the user is signed in.
+ * - Relational integrity is enforced for subcollections on create and update operations to ensure that
+ *   child documents are always correctly linked to their parents (e.g., a CustomerAddress must have a customerId
+ *   that matches its path).
+ *
+ * Denormalization for Authorization: Subcollection documents (e.g., addresses, variants, order items) contain denormalized
+ * parent IDs (e.g., customerId, productId, orderId). This allows for fast, efficient, and atomic security checks that
+ * validate the integrity of the relationship without needing slow and costly `get()` calls to parent documents.
+ *
+ * Structural Segregation: User-private data is strictly segregated into the `/users/{userId}` path, while all shared
+ * business data resides in other top-level collections. This clear separation simplifies the rules and enhances security.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Verifies that the user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Verifies that the authenticated user's UID matches the provided userId.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * Verifies that a document already exists, for use in update/delete operations.
+     */
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    // -------------------------------------------------------------------------
+    // User Collection
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Controls access to user profiles. Users can manage their own profile but cannot see others.
+     * @path /users/{userId}
+     * @allow A user (uid: 'user123') can (create) their own document at /users/user123.
+     * @deny A user (uid: 'user123') cannot (get) another user's document at /users/user456.
+     * @principle Restricts access to a user's own data tree and enforces self-creation.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && isExistingDoc();
+    }
+
+    // -------------------------------------------------------------------------
+    // Customer Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Allows any authenticated ERP operator to manage customer records.
+     * @path /customers/{customerId}
+     * @allow An authenticated user can (create) a new customer document.
+     * @deny An unauthenticated user cannot (get) any customer document.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /customers/{customerId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage customer addresses.
+     * @path /customers/{customerId}/addresses/{addressId}
+     * @allow An authenticated user can (create) an address for customer 'cust123'.
+     * @deny An authenticated user cannot (create) an address where the `customerId` field does not match the path.
+     * @principle Enforces relational integrity between a child document (address) and its parent (customer).
+     */
+    match /customers/{customerId}/addresses/{addressId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.customerId == customerId;
+      allow update: if isSignedIn() && isExistingDoc() && request.resource.data.customerId == resource.data.customerId;
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    // -------------------------------------------------------------------------
+    // Product Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Allows any authenticated ERP operator to manage product records.
+     * @path /products/{productId}
+     * @allow An authenticated user can (update) an existing product document.
+     * @deny An unauthenticated user cannot (list) any product documents.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /products/{productId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage product variants (SKUs).
+     * @path /products/{productId}/variants/{variantId}
+     * @allow An authenticated user can (create) a variant for product 'prod123'.
+     * @deny An authenticated user cannot (create) a variant where the `productId` field does not match the path.
+     * @principle Enforces relational integrity between a child document (variant) and its parent (product).
+     */
+    match /products/{productId}/variants/{variantId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.productId == productId;
+      allow update: if isSignedIn() && isExistingDoc() && request.resource.data.productId == resource.data.productId;
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage product images.
+     * @path /products/{productId}/images/{imageId}
+     * @allow An authenticated user can (create) an image for product 'prod123'.
+     * @deny An authenticated user cannot (create) an image where the `productId` field does not match the path.
+     * @principle Enforces relational integrity between a child document (image) and its parent (product).
+     */
+    match /products/{productId}/images/{imageId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.productId == productId;
+      allow update: if isSignedIn() && isExistingDoc() && request.resource.data.productId == resource.data.productId;
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage product categories.
+     * @path /product_categories/{categoryId}
+     * @allow An authenticated user can (create) a new product category document.
+     * @deny An unauthenticated user cannot (delete) a category document.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /product_categories/{categoryId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    // -------------------------------------------------------------------------
+    // Order Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Allows any authenticated ERP operator to manage customer orders.
+     * @path /orders/{orderId}
+     * @allow An authenticated user can (get) any order document.
+     * @deny An unauthenticated user cannot (list) any order documents.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /orders/{orderId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage order-specific addresses.
+     * @path /orders/{orderId}/addresses/{addressId}
+     * @allow An authenticated user can (create) an address for order 'order123'.
+     * @deny An authenticated user cannot (create) an address where the `orderId` field does not match the path.
+     * @principle Enforces relational integrity between a child document (address) and its parent (order).
+     */
+    match /orders/{orderId}/addresses/{addressId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.orderId == orderId;
+      allow update: if isSignedIn() && isExistingDoc() && request.resource.data.orderId == resource.data.orderId;
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage individual order items.
+     * @path /orders/{orderId}/items/{itemId}
+     * @allow An authenticated user can (create) an item for order 'order123'.
+     * @deny An authenticated user cannot (create) an item where the `orderId` field does not match the path.
+     * @principle Enforces relational integrity between a child document (item) and its parent (order).
+     */
+    match /orders/{orderId}/items/{itemId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.orderId == orderId;
+      allow update: if isSignedIn() && isExistingDoc() && request.resource.data.orderId == resource.data.orderId;
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    // -------------------------------------------------------------------------
+    // Logistics Collections
+    // -------------------------------------------------------------------------
+
+    /**
+     * @description Allows any authenticated ERP operator to manage warehouse records.
+     * @path /warehouses/{warehouseId}
+     * @allow An authenticated user can (create) a new warehouse document.
+     * @deny An unauthenticated user cannot (get) any warehouse document.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /warehouses/{warehouseId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage shipment records.
+     * @path /shipments/{shipmentId}
+     * @allow An authenticated user can (update) an existing shipment document.
+     * @deny An unauthenticated user cannot (delete) any shipment document.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /shipments/{shipmentId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+
+    /**
+     * @description Allows any authenticated ERP operator to manage inventory item records.
+     * @path /inventory_items/{inventoryItemId}
+     * @allow An authenticated user can (list) all inventory item documents.
+     * @deny An unauthenticated user cannot (create) any inventory item document.
+     * @principle Grants full access to business data for any trusted, signed-in operator.
+     */
+    match /inventory_items/{inventoryItemId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && isExistingDoc();
+      allow delete: if isSignedIn() && isExistingDoc();
+    }
+  }
+}
