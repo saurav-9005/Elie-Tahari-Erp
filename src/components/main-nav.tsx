@@ -11,6 +11,7 @@ import {
   Barcode,
   TrendingUp,
   AreaChart,
+  Shirt,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,6 +19,7 @@ import { usePathname } from 'next/navigation';
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inventory', label: 'Inventory', icon: Package },
+  { href: '/products', label: 'Product Catalog', icon: Shirt },
   { href: '/upc-code', label: 'UPC code', icon: Barcode },
   { href: '/sale-report', label: 'Sale Report', icon: TrendingUp },
   { href: '/adesiem-dx', label: 'Adesiem DX', icon: AreaChart },

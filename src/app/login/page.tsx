@@ -75,7 +75,7 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Login Error',
-        description: 'An error occurred during sign-in. Please try again.',
+        description: error.message || 'An error occurred during sign-in. Please try again.',
       });
     } finally {
       setIsSubmitting(false);
