@@ -149,14 +149,14 @@ export default function LoginPage() {
               <MailCheck className="mx-auto h-12 w-12 text-green-500" />
               <CardTitle className="text-xl">Check your email</CardTitle>
               <CardDescription>
-                We sent a sign-in link to your email address. Click the link to complete login.
+                We've sent a secure sign-in link to your email. This link acts as a one-time password. Click it to sign in.
               </CardDescription>
             </>
           ) : (
             <>
               <CardTitle className="text-xl">Passwordless Login</CardTitle>
               <CardDescription>
-                Enter your email below to receive a secure link to sign in.
+                Enter your email to get a secure, one-time sign-in link.
               </CardDescription>
             </>
           )}
