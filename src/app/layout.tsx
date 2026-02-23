@@ -40,11 +40,9 @@ export default function RootLayout({
           <SidebarProvider>
             <Sidebar>
               <SidebarHeader>
-                <Button variant="ghost" className="h-auto justify-start p-3" asChild>
-                  <Link href="/">
-                    <Logo />
-                  </Link>
-                </Button>
+                <Link href="/" className="flex items-center justify-center p-4">
+                  <Logo />
+                </Link>
               </SidebarHeader>
               <SidebarContent>
                 <MainNav />
