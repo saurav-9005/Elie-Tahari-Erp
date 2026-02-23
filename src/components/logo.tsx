@@ -5,7 +5,7 @@ export function Logo({ className }: { className?: string }) {
     <svg
       viewBox="0 0 450 40"
       xmlns="http://www.w3.org/2000/svg"
-      className={cn('h-6 w-auto text-foreground', className)}
+      className={cn('h-8 w-auto text-foreground', className)}
       fill="currentColor"
     >
       <title>Elie Tahari</title>
