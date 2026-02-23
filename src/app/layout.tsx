@@ -39,8 +39,8 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <SidebarProvider>
             <Sidebar>
-              <SidebarHeader>
-                <Link href="/" className="flex items-center justify-center p-4">
+              <SidebarHeader className="h-14 justify-center">
+                <Link href="/">
                   <Logo />
                 </Link>
               </SidebarHeader>
