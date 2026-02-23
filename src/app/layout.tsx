@@ -40,14 +40,9 @@ export default function RootLayout({
           <SidebarProvider>
             <Sidebar>
               <SidebarHeader>
-                <Button variant="ghost" className="h-auto justify-start p-2" asChild>
+                <Button variant="ghost" className="h-auto justify-start p-3" asChild>
                   <Link href="/">
                     <Logo />
-                    <div className="flex flex-col">
-                      <span className="font-headline text-lg font-semibold">
-                        Elie Tahari
-                      </span>
-                    </div>
                   </Link>
                 </Button>
               </SidebarHeader>

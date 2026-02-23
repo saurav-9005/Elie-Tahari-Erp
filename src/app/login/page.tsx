@@ -136,9 +136,8 @@ export default function LoginPage() {
   
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background px-4">
-      <div className="absolute top-8 flex items-center gap-2">
+      <div className="absolute top-8">
         <Logo />
-        <span className="font-headline text-lg font-semibold">Elie Tahari</span>
       </div>
 
       <Card className="w-full max-w-sm">
