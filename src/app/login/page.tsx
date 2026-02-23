@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@/firebase';
 import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
+  sendSignInLinkToEmail,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -13,113 +13,187 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MailCheck } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
-function GoogleIcon() {
-    return (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
-        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.582-3.333-11.227-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.902,35.688,44,30.41,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-      </svg>
-    );
-  }
-  
+// In a real app, this would come from a database.
+const allowedUsernames = ['sauravk'];
 
 export default function LoginPage() {
   const auth = useAuth();
   const { user, isUserLoading: isAuthLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  
+  const [username, setUsername] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
-  // Redirect if user is already logged in
+  // This effect handles the sign-in completion when the user clicks the link in their email.
   useEffect(() => {
-    if (!isAuthLoading && user) {
+    if (!auth || isAuthLoading) return;
+
+    if (user) {
       router.push('/');
+      return;
     }
-  }, [user, isAuthLoading, router]);
 
-  async function handleGoogleSignIn() {
-    if (!auth) return;
-
-    setIsSubmitting(true);
-    const provider = new GoogleAuthProvider();
-
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      if (user.email && user.email.endsWith('@elietahari.com')) {
-        toast({
-          title: 'Success!',
-          description: 'You have been successfully signed in.',
-        });
-        router.push('/');
-      } else {
-        await signOut(auth);
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      let email = window.localStorage.getItem('emailForSignIn');
+      if (!email) {
+        // This can happen if the user opens the link on a different browser/device.
+        // For simplicity, we'll show an error. A more robust solution could prompt for the email again.
         toast({
           variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Only users with an @elietahari.com email address can log in.',
+          title: 'Sign-in link error',
+          description: 'The sign-in link is invalid or has been used. Please try again.',
         });
+        return;
       }
+      
+      setIsSubmitting(true);
+      signInWithEmailLink(auth, email, window.location.href)
+        .then((result) => {
+          window.localStorage.removeItem('emailForSignIn');
+          toast({
+            title: 'Success!',
+            description: 'You are now signed in.',
+          });
+          router.push('/');
+        })
+        .catch((error) => {
+          console.error('Firebase sign-in error:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Sign-in Failed',
+            description: 'The sign-in link may have expired or is invalid. Please try again.',
+          });
+          setIsSubmitting(false);
+        });
+    }
+  }, [auth, user, isAuthLoading, router, toast]);
+
+  const handleUsernameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!auth) return;
+    
+    if (!username) {
+        toast({ variant: 'destructive', title: 'Username required' });
+        return;
+    }
+
+    if (!allowedUsernames.includes(username.toLowerCase())) {
+        toast({ variant: 'destructive', title: 'Access Denied', description: 'This username is not authorized.' });
+        return;
+    }
+
+    setIsSubmitting(true);
+    const email = `${username.toLowerCase()}@elietahari.com`;
+
+    const actionCodeSettings = {
+      url: window.location.href, // This will redirect back to the current page after sign-in
+      handleCodeInApp: true,
+    };
+
+    try {
+      await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+      window.localStorage.setItem('emailForSignIn', email);
+      setEmailSent(true);
+      toast({
+        title: 'Check your email',
+        description: `A sign-in link has been sent to ${email}.`,
+      });
     } catch (error: any) {
-      console.error('Google Sign-In error:', error);
+      console.error('Firebase send link error:', error);
       toast({
         variant: 'destructive',
-        title: 'Login Error',
-        description: error.message || 'An error occurred during sign-in. Please try again.',
+        title: 'Error sending link',
+        description: error.message || 'Could not send sign-in link. Please try again later.',
       });
     } finally {
       setIsSubmitting(false);
     }
-  }
-  
-  if (isAuthLoading || user) {
-     return (
+  };
+
+  // While checking auth state or completing sign-in, show a loader.
+  if (isAuthLoading || (auth && isSignInWithEmailLink(auth, window.location.href))) {
+    return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
         <p className="text-muted-foreground">
-            Loading...
+          Verifying...
         </p>
       </div>
     );
   }
-
+  
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background px-4">
-       <div className="absolute top-8 flex items-center gap-2">
-          <Logo />
-          <span className="font-headline text-lg font-semibold">
-            Elie Tahari
-          </span>
-       </div>
+      <div className="absolute top-8 flex items-center gap-2">
+        <Logo />
+        <span className="font-headline text-lg font-semibold">Elie Tahari</span>
+      </div>
+
       <Card className="w-full max-w-sm">
-        <CardHeader className="text-center">
-            <CardTitle className="text-xl">Welcome</CardTitle>
-            <CardDescription>
-                Sign in with your Google account to continue.
-            </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <Button onClick={handleGoogleSignIn} className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <>
-                    <GoogleIcon />
-                    <span>Sign in with Google</span>
-                </>
-              )}
-            </Button>
-        </CardContent>
+        {emailSent ? (
+          <>
+            <CardHeader className="text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/50">
+                    <MailCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+                </div>
+              <CardTitle className="pt-4 text-xl">Check your inbox</CardTitle>
+              <CardDescription>
+                A sign-in link has been sent to your email address. Click the link to log in.
+              </CardDescription>
+            </CardHeader>
+             <CardFooter>
+                <Button variant="outline" className="w-full" onClick={() => setEmailSent(false)}>
+                    Use a different username
+                </Button>
+            </CardFooter>
+          </>
+        ) : (
+          <form onSubmit={handleUsernameSubmit}>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl">Sign In</CardTitle>
+              <CardDescription>
+                Enter your username to receive a sign-in link.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="username">Username</Label>
+                <div className="flex items-center">
+                    <Input
+                        id="username"
+                        placeholder="e.g. sauravk"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        disabled={isSubmitting}
+                        required
+                    />
+                    <span className="pl-2 text-muted-foreground">@elietahari.com</span>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  'Send Sign-In Link'
+                )}
+              </Button>
+            </CardFooter>
+          </form>
+        )}
       </Card>
     </div>
   );
