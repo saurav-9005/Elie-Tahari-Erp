@@ -67,6 +67,7 @@ export default function LoginPage() {
             router.push('/');
           })
           .catch((error) => {
+            console.error('signInWithEmailLink error:', error);
             toast({
               variant: 'destructive',
               title: 'Login Failed',
@@ -113,6 +114,7 @@ export default function LoginPage() {
       window.localStorage.setItem('emailForSignIn', values.email);
       setIsEmailSent(true);
     } catch (error: any) {
+      console.error('sendSignInLinkToEmail error:', error);
       toast({
         variant: 'destructive',
         title: 'Error sending email',
