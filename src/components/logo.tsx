@@ -9,8 +9,8 @@ export function Logo({ className }: { className?: string }) {
       src="/logo.png"
       alt="Elie Tahari"
       width={200}
-      height={18}
-      className={cn('h-auto', className)}
+      height={40}
+      className={cn(className)}
       priority
     />
   );
