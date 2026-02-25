@@ -1,5 +1,3 @@
-'use server';
-
 import { fetchShopifyGraphQL } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
