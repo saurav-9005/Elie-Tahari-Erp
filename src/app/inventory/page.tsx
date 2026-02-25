@@ -1,6 +1,6 @@
-'use client';
+'use server';
 
-import { useState, useEffect, useMemo } from 'react';
+import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
@@ -21,66 +21,160 @@ import {
     TableRow,
   } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { factoryInventory, warehouseInventory, shopifyInventory, type FactoryInventoryItem, type WarehouseInventoryItem, type ShopifyInventoryItem } from '@/lib/inventory-data';
+import { factoryInventory, warehouseInventory, type FactoryInventoryItem, type WarehouseInventoryItem, getShopifyInventory, type ShopifyInventoryItem } from '@/lib/inventory-data';
 import { generateAndSendReport } from './actions';
-import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, ArrowRight, Loader2, Package, ShoppingCart, Truck } from 'lucide-react';
 import Link from 'next/link';
+import { Toaster } from '@/components/ui/toaster';
+import ReportButton from './report-button';
 
+async function InventoryStats() {
+    const shopifyData = await getShopifyInventory();
 
-export default function InventoryPage() {
-    const { user, isUserLoading: isUserLoadingAuth } = useUser();
-    const router = useRouter();
-    const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(false);
+    const factoryPOs = factoryInventory.length;
+    const factoryUnits = factoryInventory.reduce((acc, item) => acc + item.quantity, 0);
 
-    useEffect(() => {
-        if (!isUserLoadingAuth && !user) {
-          router.push('/login');
-        }
-    }, [user, isUserLoadingAuth, router]);
+    const wmsAvailable = warehouseInventory.reduce((acc, item) => acc + item.availableQty, 0);
+    const wmsReserved = warehouseInventory.reduce((acc, item) => acc + item.reservedQty, 0);
 
-    const summaryStats = useMemo(() => {
-        const factoryPOs = factoryInventory.length;
-        const factoryUnits = factoryInventory.reduce((acc, item) => acc + item.quantity, 0);
+    const shopifySellable = shopifyData.reduce((acc, product) => {
+        return acc + product.inventory.reduce((sum, inv) => sum + inv.available, 0);
+    }, 0);
+    const shopifyLocations = new Set(shopifyData.flatMap(p => p.inventory.map(i => i.location))).size;
 
-        const wmsAvailable = warehouseInventory.reduce((acc, item) => acc + item.availableQty, 0);
-        const wmsReserved = warehouseInventory.reduce((acc, item) => acc + item.reservedQty, 0);
+    const summaryStats = { factoryPOs, factoryUnits, wmsAvailable, wmsReserved, shopifySellable, shopifyLocations };
 
-        const shopifySellable = shopifyInventory.reduce((acc, product) => {
-            return acc + product.inventory.reduce((sum, inv) => sum + inv.available, 0);
-        }, 0);
-        const shopifyLocations = new Set(shopifyInventory.flatMap(p => p.inventory.map(i => i.location))).size;
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                <Truck className="h-8 w-8 text-muted-foreground" />
+                <div>
+                    <CardTitle>Factory Inventory</CardTitle>
+                    <CardDescription>In production or transit from factory.</CardDescription>
+                </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-2 text-sm">
+                <div className="flex justify-between">
+                <span className="text-muted-foreground">Active POs</span>
+                <span className="font-medium">{summaryStats.factoryPOs}</span>
+                </div>
+                <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Units</span>
+                <span className="font-medium">{summaryStats.factoryUnits.toLocaleString()}</span>
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button asChild className="w-full">
+                <Link href="/inventory/factory">View All Factory Inventory <ArrowRight className="ml-2" /></Link>
+                </Button>
+            </CardFooter>
+            </Card>
 
-        return { factoryPOs, factoryUnits, wmsAvailable, wmsReserved, shopifySellable, shopifyLocations };
-    }, []);
+            <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                <Package className="h-8 w-8 text-muted-foreground" />
+                <div>
+                    <CardTitle>WMS Inventory</CardTitle>
+                    <CardDescription>Live data from warehouse system.</CardDescription>
+                </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-2 text-sm">
+                <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Available</span>
+                <span className="font-medium text-green-600">{summaryStats.wmsAvailable.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Reserved</span>
+                <span className="font-medium text-orange-600">{summaryStats.wmsReserved.toLocaleString()}</span>
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button asChild className="w-full">
+                <Link href="/inventory/wms">View All WMS Inventory <ArrowRight className="ml-2" /></Link>
+                </Button>
+            </CardFooter>
+            </Card>
+            
+            <Card className="flex flex-col">
+            <CardHeader>
+                <div className="flex items-center gap-4">
+                <ShoppingCart className="h-8 w-8 text-muted-foreground" />
+                <div>
+                    <CardTitle>Shopify Inventory</CardTitle>
+                    <CardDescription>Live levels from Shopify stores.</CardDescription>
+                </div>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow space-y-2 text-sm">
+                <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Sellable</span>
+                <span className="font-medium text-blue-600">{summaryStats.shopifySellable.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                <span className="text-muted-foreground"># of Locations</span>
+                <span className="font-medium">{summaryStats.shopifyLocations}</span>
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button asChild className="w-full">
+                <Link href="/inventory/shopify">View All Shopify Inventory <ArrowRight className="ml-2" /></Link>
+                </Button>
+            </CardFooter>
+            </Card>
+        </div>
+    )
+}
 
-    async function handleSendReport() {
-        setIsLoading(true);
-        const result = await generateAndSendReport();
-        if (result.success) {
-            toast({
-                title: 'Inventory Report',
-                description: result.message,
-            });
-        } else {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: result.message,
-            });
-        }
-        setIsLoading(false);
-    }
-    
-    if (isUserLoadingAuth || !user) {
-      return (
-          <div className="flex h-[calc(100vh-theme(spacing.14))] items-center justify-center">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          </div>
-      );
-    }
+async function ShopifyInventorySnapshot() {
+    const shopifyData = await getShopifyInventory();
+    const flatShopifyData = shopifyData.flatMap((product: ShopifyInventoryItem) =>
+        product.inventory.map(inv => ({...product, ...inv}))
+    );
 
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Shopify Inventory Snapshot</CardTitle>
+                <CardDescription>A quick look at sellable stock on Shopify.</CardDescription>
+            </CardHeader>
+            <CardContent>
+            <Table>
+                <TableHeader>
+                <TableRow>
+                    <TableHead>Product</TableHead>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead className="text-right">Available</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+                </TableHeader>
+                <TableBody>
+                {flatShopifyData.slice(0,5).map((item) =>
+                    <TableRow key={`${item.sku}-${item.location}`}>
+                        <TableCell className="font-medium">{item.productName}</TableCell>
+                        <TableCell>{item.sku}</TableCell>
+                        <TableCell><Badge variant="outline">{item.location}</Badge></TableCell>
+                        <TableCell className="text-right">{item.available}</TableCell>
+                        <TableCell className="text-right">
+                        <Button asChild variant="ghost" size="sm">
+                            <Link href={`/inventory/shopify/${item.sku}/${encodeURIComponent(item.location)}`}>View More</Link>
+                        </Button>
+                        </TableCell>
+                    </TableRow>
+                )}
+                </TableBody>
+            </Table>
+            </CardContent>
+        </Card>
+    );
+}
+
+export default async function InventoryPage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex justify-between items-start">
@@ -92,96 +186,18 @@ export default function InventoryPage() {
                 Track inventory from Factory, to Warehouse (WMS), to Shopify.
             </p>
         </div>
-        <Button onClick={handleSendReport} disabled={isLoading}>
-            {isLoading ? <Loader2 className="animate-spin" /> : <AlertTriangle />}
-            Generate & Send Alert Report
-        </Button>
+        <ReportButton />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="flex flex-col">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Truck className="h-8 w-8 text-muted-foreground" />
-              <div>
-                <CardTitle>Factory Inventory</CardTitle>
-                <CardDescription>In production or transit from factory.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-grow space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Active POs</span>
-              <span className="font-medium">{summaryStats.factoryPOs}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Units</span>
-              <span className="font-medium">{summaryStats.factoryUnits.toLocaleString()}</span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full">
-              <Link href="/inventory/factory">View All Factory Inventory <ArrowRight className="ml-2" /></Link>
-            </Button>
-          </CardFooter>
-        </Card>
+      <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card><CardHeader><CardTitle>Factory Inventory</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>WMS Inventory</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Shopify Inventory</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card>
+      </div>}>
+        <InventoryStats />
+      </Suspense>
 
-        <Card className="flex flex-col">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <Package className="h-8 w-8 text-muted-foreground" />
-              <div>
-                <CardTitle>WMS Inventory</CardTitle>
-                <CardDescription>Live data from warehouse system.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-grow space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Available</span>
-              <span className="font-medium text-green-600">{summaryStats.wmsAvailable.toLocaleString()}</span>
-            </div>
-             <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Reserved</span>
-              <span className="font-medium text-orange-600">{summaryStats.wmsReserved.toLocaleString()}</span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full">
-              <Link href="/inventory/wms">View All WMS Inventory <ArrowRight className="ml-2" /></Link>
-            </Button>
-          </CardFooter>
-        </Card>
-        
-        <Card className="flex flex-col">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-              <div>
-                <CardTitle>Shopify Inventory</CardTitle>
-                <CardDescription>Live levels from Shopify stores.</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="flex-grow space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Total Sellable</span>
-              <span className="font-medium text-blue-600">{summaryStats.shopifySellable.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground"># of Locations</span>
-              <span className="font-medium">{summaryStats.shopifyLocations}</span>
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button asChild className="w-full">
-              <Link href="/inventory/shopify">View All Shopify Inventory <ArrowRight className="ml-2" /></Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-
-        <div className="space-y-8">
+      <div className="space-y-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Recent Factory Inventory</CardTitle>
@@ -258,44 +274,11 @@ export default function InventoryPage() {
                 </CardContent>
             </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Shopify Inventory Snapshot</CardTitle>
-                    <CardDescription>A quick look at sellable stock on Shopify.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead>Product</TableHead>
-                        <TableHead>SKU</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead className="text-right">Available</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {shopifyInventory.flatMap((product: ShopifyInventoryItem) =>
-                        product.inventory.map(inv => (
-                        <TableRow key={`${product.sku}-${inv.location}`}>
-                            <TableCell className="font-medium">{product.productName}</TableCell>
-                            <TableCell>{product.sku}</TableCell>
-                            <TableCell><Badge variant="outline">{inv.location}</Badge></TableCell>
-                            <TableCell className="text-right">{inv.available}</TableCell>
-                            <TableCell className="text-right">
-                            <Button asChild variant="ghost" size="sm">
-                                <Link href={`/inventory/shopify/${product.sku}/${encodeURIComponent(inv.location)}`}>View More</Link>
-                            </Button>
-                            </TableCell>
-                        </TableRow>
-                        ))
-                    ).slice(0,5)}
-                    </TableBody>
-                </Table>
-                </CardContent>
-            </Card>
+            <Suspense fallback={<Card><CardHeader><CardTitle>Shopify Inventory Snapshot</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin"/></CardContent></Card>}>
+                <ShopifyInventorySnapshot />
+            </Suspense>
         </div>
-
+      <Toaster />
     </div>
   );
 }

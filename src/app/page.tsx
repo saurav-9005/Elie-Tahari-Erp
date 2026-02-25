@@ -1,8 +1,6 @@
-'use client';
+'use server';
 
-import { useMemo, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
+import { Suspense } from 'react';
 import {
   Card,
   CardContent,
@@ -29,21 +27,9 @@ import { DollarSign, Loader2, Package, PackageX, Warehouse } from 'lucide-react'
 import { inventoryValueData } from '@/lib/data';
 import {
   factoryInventory,
-  warehouseInventory,
-  shopifyInventory,
+  getDashboardStats
 } from '@/lib/inventory-data';
 
-type ConsolidatedInventoryItem = {
-  sku: string;
-  productName: string;
-  factoryQty: number;
-  warehouseQty: number;
-  shopifySellableQty: number;
-  totalSellable: number;
-  status: 'In Stock' | 'Low Stock' | 'Out of Stock' | 'Overstocked';
-};
-
-// New data for the new charts
 const inventoryValueTrendData = [
   { date: 'Jan 24', value: 2050000 },
   { date: 'Feb 24', value: 2080000 },
@@ -99,30 +85,75 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+async function KpiCards() {
+  const stats = await getDashboardStats();
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Total Inventory Units
+          </CardTitle>
+          <Warehouse className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.totalUnits.toLocaleString()}</div>
+          <p className="text-xs text-muted-foreground">
+            Across all locations
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Inventory Value
+          </CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">${stats.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <p className="text-xs text-muted-foreground">
+            Total value of all stock
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Out of Stock Products
+          </CardTitle>
+          <PackageX className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.outOfStockCount}</div>
+          <p className="text-xs text-muted-foreground">
+            SKUs with zero sellable inventory
+          </p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">
+            Low Stock Products
+          </CardTitle>
+          <Package className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.lowStockCount}</div>
+          <p className="text-xs text-muted-foreground">
+            SKUs with &lt; 10 units
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
 
 export default function Dashboard() {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-
-  const topFactoryPOs = useMemo(() => {
-    return factoryInventory
+  const topFactoryPOs = factoryInventory
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
-  }, []);
-
-  if (isUserLoading || !user) {
-    return (
-        <div className="flex h-[calc(100vh-theme(spacing.14))] items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -130,64 +161,14 @@ export default function Dashboard() {
         Inventory Dashboard
       </h1>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Inventory Units
-            </CardTitle>
-            <Warehouse className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">12,345</div>
-            <p className="text-xs text-muted-foreground">
-              Across all locations
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Inventory Value
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$2,125,920.00</div>
-            <p className="text-xs text-muted-foreground">
-              Total value of all stock
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Out of Stock Products
-            </CardTitle>
-            <PackageX className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1</div>
-            <p className="text-xs text-muted-foreground">
-              SKUs with zero sellable inventory
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Low Stock Products
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">
-              SKUs with &lt; 10 units
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Suspense fallback={<div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card><CardContent className="pt-6"><Loader2 className="animate-spin"/></CardContent></Card>
+        <Card><CardContent className="pt-6"><Loader2 className="animate-spin"/></CardContent></Card>
+        <Card><CardContent className="pt-6"><Loader2 className="animate-spin"/></CardContent></Card>
+        <Card><CardContent className="pt-6"><Loader2 className="animate-spin"/></CardContent></Card>
+      </div>}>
+        <KpiCards />
+      </Suspense>
 
       <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
         <Card>

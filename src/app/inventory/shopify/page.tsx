@@ -1,8 +1,5 @@
-'use client';
+'use server';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,28 +13,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { shopifyInventory, type ShopifyInventoryItem } from '@/lib/inventory-data';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { getShopifyInventory, type ShopifyInventoryItem } from '@/lib/inventory-data';
+import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 
-export default function ShopifyInventoryPage() {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    }
-  }, [user, isUserLoading, router]);
-
-  if (isUserLoading || !user) {
-    return (
-      <div className="flex h-[calc(100vh-theme(spacing.14))] items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
+export default async function ShopifyInventoryPage() {
+  const shopifyInventoryData = await getShopifyInventory();
+  
+  const flattenedInventory = shopifyInventoryData.flatMap((product: ShopifyInventoryItem) =>
+    product.inventory.map(inv => ({
+      productName: product.productName,
+      sku: product.sku,
+      ...inv,
+    }))
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -72,23 +62,22 @@ export default function ShopifyInventoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shopifyInventory.flatMap((product: ShopifyInventoryItem) =>
-                product.inventory.map(inv => (
-                  <TableRow key={`${product.sku}-${inv.location}`}>
-                    <TableCell className="font-medium">{product.productName}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell><Badge variant="outline">{inv.location}</Badge></TableCell>
-                    <TableCell className="text-right">{inv.available}</TableCell>
-                    <TableCell className="text-right">{inv.committed}</TableCell>
-                    <TableCell className="text-right">{inv.incoming}</TableCell>
+              {flattenedInventory.map((item) => (
+                  <TableRow key={`${item.sku}-${item.location}`}>
+                    <TableCell className="font-medium">{item.productName}</TableCell>
+                    <TableCell>{item.sku}</TableCell>
+                    <TableCell><Badge variant="outline">{item.location}</Badge></TableCell>
+                    <TableCell className="text-right">{item.available}</TableCell>
+                    <TableCell className="text-right">{item.committed}</TableCell>
+                    <TableCell className="text-right">{item.incoming}</TableCell>
                     <TableCell className="text-right">
                       <Button asChild variant="ghost" size="sm">
-                        <Link href={`/inventory/shopify/${product.sku}/${encodeURIComponent(inv.location)}`}>View More</Link>
+                        <Link href={`/inventory/shopify/${item.sku}/${encodeURIComponent(item.location)}`}>View More</Link>
                       </Button>
                     </TableCell>
                   </TableRow>
                 ))
-              )}
+              }
             </TableBody>
           </Table>
         </CardContent>
