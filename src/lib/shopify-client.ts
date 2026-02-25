@@ -5,13 +5,13 @@ type ShopifyResponse<T> = {
   extensions: any;
 };
 
-class ShopifyFetchError extends Error {
-    constructor(message: string, public status: number, public errors?: any) {
-        super(message);
-        this.name = 'ShopifyFetchError';
-        // Manually set the prototype to fix issues with extending built-in classes like Error.
-        Object.setPrototypeOf(this, ShopifyFetchError.prototype);
-    }
+// Using a factory function instead of a class to avoid build issues.
+function createShopifyFetchError(message: string, status: number, errors?: any): Error {
+    const error = new Error(message);
+    error.name = 'ShopifyFetchError';
+    (error as any).status = status;
+    (error as any).errors = errors;
+    return error;
 }
 
 export async function fetchShopifyGraphQL<T>(
@@ -42,7 +42,7 @@ export async function fetchShopifyGraphQL<T>(
 
     if (!response.ok) {
         const errorBody = await response.text();
-        throw new ShopifyFetchError(
+        throw createShopifyFetchError(
             `Shopify API request failed with status ${response.status}`,
             response.status,
             errorBody,
@@ -53,15 +53,13 @@ export async function fetchShopifyGraphQL<T>(
 
     if (json.errors) {
       console.error('Shopify GraphQL Errors:', json.errors);
-      throw new ShopifyFetchError('Shopify GraphQL query returned errors.', response.status, json.errors);
+      throw createShopifyFetchError('Shopify GraphQL query returned errors.', response.status, json.errors);
     }
 
     return json.data;
   } catch (error) {
     console.error('Failed to fetch from Shopify:', error);
-    if (error instanceof ShopifyFetchError) {
-        throw error;
-    }
-    throw new Error('An unexpected error occurred while fetching from Shopify.');
+    // Re-throw the error to be handled by the caller
+    throw error;
   }
 }

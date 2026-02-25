@@ -25,7 +25,7 @@ interface FirebaseAuthObject {
   token: FirebaseAuthToken;
 }
 
-interface SecurityRuleRequest {
+export interface SecurityRuleRequest {
   auth: FirebaseAuthObject | null;
   method: string;
   path: string;
@@ -107,20 +107,22 @@ ${JSON.stringify(requestObject, null, 2)}`;
 }
 
 /**
- * A custom error class designed to be consumed by an LLM for debugging.
- * It structures the error information to mimic the request object
- * available in Firestore Security Rules.
+ * A custom error type that includes the security rule request context.
+ * It's an intersection of the standard Error and our custom properties.
  */
-export class FirestorePermissionError extends Error {
-  public readonly request: SecurityRuleRequest;
+export type FirestorePermissionError = Error & { request: SecurityRuleRequest };
 
-  constructor(context: SecurityRuleContext) {
-    const requestObject = buildRequestObject(context);
-    super(buildErrorMessage(requestObject));
-    this.name = 'FirebaseError';
-    this.request = requestObject;
 
-    // Manually set the prototype to fix issues with extending built-in classes like Error.
-    Object.setPrototypeOf(this, FirestorePermissionError.prototype);
-  }
+/**
+ * A factory function to create a custom error object for Firestore permission issues.
+ * This approach avoids `class extends Error` which can cause issues in some JS build environments.
+ * @param context The context of the failed Firestore operation.
+ * @returns A FirestorePermissionError object.
+ */
+export function createFirestorePermissionError(context: SecurityRuleContext): FirestorePermissionError {
+  const requestObject = buildRequestObject(context);
+  const error = new Error(buildErrorMessage(requestObject)) as FirestorePermissionError;
+  error.name = 'FirebaseError'; // Keep name consistent for potential type checks.
+  error.request = requestObject; // Attach the custom request payload.
+  return error;
 }
