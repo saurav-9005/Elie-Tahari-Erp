@@ -98,7 +98,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     
     const actionCodeSettings = {
-      url: window.location.origin, // Redirect back to the home page after sign-in
+      url: `${window.location.origin}/login`, // URL of the page that will handle the sign-in
       handleCodeInApp: true,
     };
 
