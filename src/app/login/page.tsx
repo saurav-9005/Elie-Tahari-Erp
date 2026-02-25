@@ -23,8 +23,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, MailCheck } from 'lucide-react';
 import { Logo } from '@/components/logo';
 
-// In a real app, this would come from a database.
-const allowedUsernames = ['sauravk'];
+// A list of approved email addresses for login.
+const allowedEmails = [
+    'sauravk@elietahari.com',
+    'saurav9005@gmail.com'
+];
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -32,7 +35,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
@@ -46,10 +49,8 @@ export default function LoginPage() {
     }
 
     if (isSignInWithEmailLink(auth, window.location.href)) {
-      let email = window.localStorage.getItem('emailForSignIn');
-      if (!email) {
-        // This can happen if the user opens the link on a different browser/device.
-        // For simplicity, we'll show an error. A more robust solution could prompt for the email again.
+      let emailFromStorage = window.localStorage.getItem('emailForSignIn');
+      if (!emailFromStorage) {
         toast({
           variant: 'destructive',
           title: 'Sign-in link error',
@@ -59,7 +60,7 @@ export default function LoginPage() {
       }
       
       setIsSubmitting(true);
-      signInWithEmailLink(auth, email, window.location.href)
+      signInWithEmailLink(auth, emailFromStorage, window.location.href)
         .then((result) => {
           window.localStorage.removeItem('emailForSignIn');
           toast({
@@ -80,25 +81,24 @@ export default function LoginPage() {
     }
   }, [auth, user, isAuthLoading, router, toast]);
 
-  const handleUsernameSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!auth) return;
     
-    if (!username) {
-        toast({ variant: 'destructive', title: 'Username required' });
+    if (!email) {
+        toast({ variant: 'destructive', title: 'Email address is required' });
         return;
     }
 
-    if (!allowedUsernames.includes(username.toLowerCase())) {
-        toast({ variant: 'destructive', title: 'Access Denied', description: 'This username is not authorized.' });
+    if (!allowedEmails.includes(email.toLowerCase())) {
+        toast({ variant: 'destructive', title: 'Access Denied', description: 'This email address is not authorized for access.' });
         return;
     }
 
     setIsSubmitting(true);
-    const email = `${username.toLowerCase()}@elietahari.com`;
-
+    
     const actionCodeSettings = {
-      url: window.location.href, // This will redirect back to the current page after sign-in
+      url: window.location.origin, // Redirect back to the home page after sign-in
       handleCodeInApp: true,
     };
 
@@ -153,33 +153,31 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
              <CardFooter>
-                <Button variant="outline" className="w-full" onClick={() => setEmailSent(false)}>
-                    Use a different username
+                <Button variant="outline" className="w-full" onClick={() => { setEmailSent(false); setEmail(''); }}>
+                    Use a different email
                 </Button>
             </CardFooter>
           </>
         ) : (
-          <form onSubmit={handleUsernameSubmit}>
+          <form onSubmit={handleEmailSubmit}>
             <CardHeader className="text-center">
               <CardTitle className="text-xl">Sign In</CardTitle>
               <CardDescription>
-                Enter your username to receive a sign-in link.
+                Enter your email address to receive a sign-in link.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <div className="flex items-center">
-                    <Input
-                        id="username"
-                        placeholder="e.g. sauravk"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        disabled={isSubmitting}
-                        required
-                    />
-                    <span className="pl-2 text-muted-foreground">@elietahari.com</span>
-                </div>
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={isSubmitting}
+                    required
+                />
               </div>
             </CardContent>
             <CardFooter>
