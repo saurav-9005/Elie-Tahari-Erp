@@ -9,6 +9,8 @@ class ShopifyFetchError extends Error {
     constructor(message: string, public status: number, public errors?: any) {
         super(message);
         this.name = 'ShopifyFetchError';
+        // Manually set the prototype to fix issues with extending built-in classes like Error.
+        Object.setPrototypeOf(this, ShopifyFetchError.prototype);
     }
 }
 

@@ -119,5 +119,8 @@ export class FirestorePermissionError extends Error {
     super(buildErrorMessage(requestObject));
     this.name = 'FirebaseError';
     this.request = requestObject;
+
+    // Manually set the prototype to fix issues with extending built-in classes like Error.
+    Object.setPrototypeOf(this, FirestorePermissionError.prototype);
   }
 }

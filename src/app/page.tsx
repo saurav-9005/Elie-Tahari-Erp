@@ -150,7 +150,7 @@ async function KpiCards() {
   )
 }
 
-export default function Dashboard() {
+export default async function Dashboard() {
   const topFactoryPOs = factoryInventory
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
