@@ -3,23 +3,29 @@
 import { google } from 'googleapis';
 import { unstable_cache as cache } from 'next/cache';
 
-const SHEET_ID = process.env.GOOGLE_SHEET_ID;
+const getSheetsApi = () => {
+    // This is a more robust check to ensure all required variables are present.
+    const areCredsAvailable = 
+        !!process.env.GOOGLE_SHEET_ID &&
+        !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL &&
+        !!process.env.GOOGLE_SHEETS_PRIVATE_KEY;
 
-// This is a more robust check to ensure all required variables are present.
-const areCredsAvailable = 
-    !!process.env.GOOGLE_SHEET_ID &&
-    !!process.env.GOOGLE_SHEETS_CLIENT_EMAIL &&
-    !!process.env.GOOGLE_SHEETS_PRIVATE_KEY;
+    if (!areCredsAvailable) {
+        console.warn('Google Sheets API credentials not fully configured. One or more environment variables are missing (GOOGLE_SHEET_ID, GOOGLE_SHEETS_CLIENT_EMAIL, GOOGLE_SHEETS_PRIVATE_KEY). Skipping fetch.');
+        return null;
+    }
 
-const auth = areCredsAvailable ? new google.auth.GoogleAuth({
-  credentials: {
-    client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  },
-  scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-}) : null;
+    const auth = new google.auth.GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
 
-const sheets = auth ? google.sheets({ version: 'v4', auth }) : null;
+    return google.sheets({ version: 'v4', auth });
+}
+
 
 const MONTHS = [
   'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
@@ -34,14 +40,14 @@ type SheetTab = {
 
 export const getSheetTabs = cache(
   async (): Promise<SheetTab[]> => {
-    if (!areCredsAvailable || !sheets) {
-      console.warn('Google Sheets API credentials not fully configured. One or more environment variables are missing (GOOGLE_SHEET_ID, GOOGLE_SHEETS_CLIENT_EMAIL, GOOGLE_SHEETS_PRIVATE_KEY). Skipping fetch.');
+    const sheets = getSheetsApi();
+    if (!sheets) {
       return [];
     }
 
     try {
       const response = await sheets.spreadsheets.get({
-        spreadsheetId: SHEET_ID,
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
       });
 
       const tabs = response.data.sheets
@@ -89,13 +95,13 @@ function toCamelCase(str: string): string {
 
 export const getSheetData = cache(
   async (sheetName: string): Promise<DeliveryRow[]> => {
-    if (!areCredsAvailable || !sheets) {
-        console.warn('Google Sheets API credentials not fully configured. Skipping fetch.');
+    const sheets = getSheetsApi();
+    if (!sheets) {
         return [];
     }
     try {
       const response = await sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID,
+        spreadsheetId: process.env.GOOGLE_SHEET_ID,
         range: `${sheetName}!A:Z`,
       });
 
