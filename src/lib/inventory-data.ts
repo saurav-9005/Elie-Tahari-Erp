@@ -212,7 +212,7 @@ type ShopifyProductsResponse = {
 // GraphQL query to fetch products, variants, and inventory levels
 const SHOPIFY_INVENTORY_QUERY = `
 query getProductsWithInventory {
-  products(first: 50) {
+  products(first: 5, sortKey: CREATED_AT, reverse: true) {
     nodes {
       id
       title
