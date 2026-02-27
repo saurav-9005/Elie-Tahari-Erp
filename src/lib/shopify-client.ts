@@ -64,4 +64,4 @@ export async function fetchShopifyGraphQL<T>(
   }
 }
 
-// Triggering a server restart to load new environment variables.
+// Triggering a server restart to apply updated environment variables.
