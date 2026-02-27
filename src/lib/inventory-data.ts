@@ -252,8 +252,9 @@ async function fetchAndTransformShopifyData(): Promise<ShopifyProductNode[]> {
         const response = await fetchShopifyGraphQL<ShopifyProductsResponse>(SHOPIFY_INVENTORY_QUERY);
         return response.products.nodes;
     } catch (e) {
-        console.error("Disabling Shopify integration due to fetch error:", e);
-        return []; // Return empty array on error to prevent app crash
+        console.error("Shopify data fetch failed:", e);
+        // Re-throw the error to be caught by the page and displayed in the Next.js overlay.
+        throw e;
     }
 }
 
