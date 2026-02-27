@@ -22,7 +22,6 @@ import {
   Factory,
   Warehouse,
   ShoppingCart,
-  Truck
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -40,7 +39,6 @@ const topLevelItems = [
 const inventorySubItems = [
     { href: '/inventory', label: 'Overview', icon: ClipboardList },
     { href: '/inventory/factory', label: 'Factory POs', icon: Factory },
-    { href: '/inventory/factory-deliveries', label: 'Factory Deliveries', icon: Truck },
     { href: '/inventory/wms', label: 'WMS', icon: Warehouse },
     { href: '/inventory/shopify', label: 'Shopify', icon: ShoppingCart },
 ]
