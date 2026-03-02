@@ -241,7 +241,7 @@ export async function getProducts(): Promise<Product[]> {
     const res = await shopifyFetch<{ products: { edges: { node: ShopifyProduct }[] } }>({
         query: getProductsQuery,
         variables: {
-        first: 20,
+        first: 5,
         },
     }, {
         tags: ['products'],
