@@ -15,6 +15,7 @@ import {
   getDashboardStats
 } from '@/lib/inventory-data';
 import { DashboardCharts } from './dashboard-charts';
+import ShopifyApiError from '@/components/shopify-api-error';
 
 const inventoryValueTrendData = [
   { date: 'Jan 24', value: 2050000 },
@@ -34,68 +35,79 @@ const stockAgingData = [
 ];
 
 async function KpiCards() {
-  const stats = await getDashboardStats();
+  try {
+    const stats = await getDashboardStats();
 
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Total Inventory Units
-          </CardTitle>
-          <Warehouse className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalUnits.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
-            Across all locations
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Inventory Value
-          </CardTitle>
-          <DollarSign className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">${stats.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-          <p className="text-xs text-muted-foreground">
-            Total value of all stock
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Out of Stock Products
-          </CardTitle>
-          <PackageX className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.outOfStockCount}</div>
-          <p className="text-xs text-muted-foreground">
-            SKUs with zero sellable inventory
-          </p>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Low Stock Products
-          </CardTitle>
-          <Package className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.lowStockCount}</div>
-          <p className="text-xs text-muted-foreground">
-            SKUs with &lt; 10 units
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Inventory Units
+            </CardTitle>
+            <Warehouse className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalUnits.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              Across all locations
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Inventory Value
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${stats.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            <p className="text-xs text-muted-foreground">
+              Total value of all stock
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Out of Stock Products
+            </CardTitle>
+            <PackageX className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.outOfStockCount}</div>
+            <p className="text-xs text-muted-foreground">
+              SKUs with zero sellable inventory
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Low Stock Products
+            </CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.lowStockCount}</div>
+            <p className="text-xs text-muted-foreground">
+              SKUs with &lt; 10 units
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  } catch (error: any) {
+    if (error.name === 'ShopifyFetchError') {
+        return (
+            <div className="md:col-span-2 lg:col-span-4">
+                <ShopifyApiError />
+            </div>
+        )
+    }
+    throw error;
+  }
 }
 
 export default async function Dashboard() {

@@ -23,8 +23,7 @@ export default async function ProductsPage() {
       </div>
     );
   } catch (error: any) {
-    // Specifically check for the 401 Unauthorized error to show a helpful message.
-    if (error.name === 'ShopifyFetchError' && error.status === 401) {
+    if (error.name === 'ShopifyFetchError') {
       return (
          <div className="flex flex-col gap-8">
             <div>
