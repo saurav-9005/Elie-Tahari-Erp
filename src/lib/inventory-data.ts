@@ -1,3 +1,4 @@
+import { shopifyFetch, getProductsQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -145,9 +146,29 @@ export const warehouseInventory: WarehouseInventoryItem[] = [
 // #endregion
 
 
-// #region Static Data
+// #region Static Data & Shopify Integration
 
-// Local types for app data structure
+// The type for a product returned from the Shopify Admin API
+type ShopifyProduct = {
+    id: string;
+    title: string;
+    tags: string[];
+    featuredImage: {
+      url: string;
+      altText: string;
+    } | null;
+    variants: {
+      edges: {
+        node: {
+          id: string;
+          sku: string;
+          price: string;
+        }
+      }[]
+    }
+}
+
+// Local type for app data structure
 export type ShopifyInventoryItem = {
   sku: string;
   productName: string;
@@ -168,6 +189,7 @@ export type Product = {
     imageUrl: string | null;
 };
 
+// Static data that remains for other parts of the app
 export const products: Product[] = [
     { id: 'gid://shopify/Product/1', sku: 'CF-DRS-SLK-01', name: 'A-line Silk Dress', category: 'Dresses', price: 250.00, imageUrl: 'https://images.unsplash.com/photo-1629221191319-8a3556108e16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzaGVhdGglMjBkcmVzc3xlbnwwfHx8fDE3NzE5NTQwODV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
     { id: 'gid://shopify/Product/2', sku: 'CF-COA-WOL-05', name: 'Wool Coat', category: 'Coats', price: 450.00, imageUrl: 'https://images.unsplash.com/photo-1573545289441-827c028f7a3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmVuY2glMjBjb2F0fGVufDB8fHx8MTc3MTI2Mjc2M3ww&ixlib=rb-4.1.0&q=80&w=1080' },
@@ -212,12 +234,33 @@ export const shopifyInventory: ShopifyInventoryItem[] = [
 
 
 /**
- * Returns a static list of products.
+ * Fetches products from the Shopify Admin API.
  * @returns {Promise<Product[]>}
  */
 export async function getProducts(): Promise<Product[]> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const res = await shopifyFetch<{ products: { edges: { node: ShopifyProduct }[] } }>({
+        query: getProductsQuery,
+        variables: {
+        first: 20,
+        },
+    }, {
+        tags: ['products'],
+        cache: 'no-store'
+    });
+
+    const products = res.products.edges.map(({ node }) => {
+        const variant = node.variants.edges[0]?.node;
+        return {
+            id: node.id,
+            name: node.title,
+            // Use the first tag as the category, or a default
+            category: node.tags[0] || 'Uncategorized',
+            price: parseFloat(variant?.price || '0'),
+            sku: variant?.sku || 'N/A',
+            imageUrl: node.featuredImage?.url || null,
+        };
+    });
+
     return products;
 }
 
@@ -234,7 +277,8 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
 
 export async function getDashboardStats() {
     const shopifyInventoryData = await getShopifyInventory();
-    const productsData = await getProducts();
+    // Using the static products list here for stats calculation
+    const productsData = products;
     
     const wmsUnits = warehouseInventory.reduce((sum, item) => sum + item.availableQty, 0);
     const shopifyUnits = shopifyInventoryData.reduce((sum, item) => sum + item.inventory.reduce((locSum, loc) => locSum + loc.available, 0), 0);
