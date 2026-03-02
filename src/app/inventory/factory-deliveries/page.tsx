@@ -5,7 +5,7 @@ export default function FactoryDeliveriesPage() {
         Factory Deliveries
       </h1>
       <p className="text-muted-foreground">
-        This feature has been disabled.
+        This feature has been disabled as all integrations have been removed.
       </p>
     </div>
   );
