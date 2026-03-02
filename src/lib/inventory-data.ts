@@ -1,4 +1,3 @@
-import { fetchShopifyGraphQL } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -146,7 +145,7 @@ export const warehouseInventory: WarehouseInventoryItem[] = [
 // #endregion
 
 
-// #region Shopify Data Fetching
+// #region Static Data
 
 // Local types for app data structure
 export type ShopifyInventoryItem = {
@@ -169,142 +168,67 @@ export type Product = {
     imageUrl: string | null;
 };
 
-// #region GraphQL Response Types
-type ShopifyInventoryLevelNode = {
-    available: number;
-    committed: number;
-    incoming: number;
-    location: {
-        name: string;
-    };
-};
+export const products: Product[] = [
+    { id: 'gid://shopify/Product/1', sku: 'CF-DRS-SLK-01', name: 'A-line Silk Dress', category: 'Dresses', price: 250.00, imageUrl: 'https://images.unsplash.com/photo-1629221191319-8a3556108e16?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxzaGVhdGglMjBkcmVzc3xlbnwwfHx8fDE3NzE5NTQwODV8MA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'gid://shopify/Product/2', sku: 'CF-COA-WOL-05', name: 'Wool Coat', category: 'Coats', price: 450.00, imageUrl: 'https://images.unsplash.com/photo-1573545289441-827c028f7a3b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmVuY2glMjBjb2F0fGVufDB8fHx8MTc3MTI2Mjc2M3ww&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'gid://shopify/Product/3', sku: 'CF-CGN-CSH-03', name: 'Cashmere Cardigan', category: 'Cardigans', price: 320.00, imageUrl: 'https://images.unsplash.com/photo-1621932943339-43c7b738d821?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzaWxrJTIwYmxvdXNlfGVufDB8fHx8MTc3MTk1NDI5NHww&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'gid://shopify/Product/4', sku: 'CF-SKT-MAX-02', name: 'Floral Print Maxi Skirt', category: 'Skirts', price: 150.00, imageUrl: 'https://images.unsplash.com/photo-1587280429443-0498e7279a94?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxmbG9yYWwlMjBtYXhpJTIwZHJlc3N8ZW58MHx8fHwxNzcxOTU0MjM0fDA&ixlib=rb-4.1.0&q=80&w=1080' },
+    { id: 'gid://shopify/Product/5', sku: 'CF-BLO-LIN-06', name: 'Linen Blouse', category: 'Blouses', price: 120.00, imageUrl: 'https://images.unsplash.com/photo-1621932943339-43c7b738d821?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzaWxrJTIwYmxvdXNlfGVufDB8fHx8MTc3MTk1NDI5NHww&ixlib=rb-4.1.0&q=80&w=1080' },
+];
 
-type ShopifyVariantNode = {
-    sku: string;
-    price: string;
-    inventoryItem: {
-        inventoryLevels: {
-            nodes: ShopifyInventoryLevelNode[];
-        };
-    };
-};
+export const shopifyInventory: ShopifyInventoryItem[] = [
+  {
+    sku: 'CF-DRS-SLK-01',
+    productName: 'A-line Silk Dress',
+    inventory: [
+      { location: 'SoHo Flagship', available: 5, committed: 2, incoming: 0 },
+      { location: 'Online Store', available: 10, committed: 8, incoming: 20 },
+    ],
+  },
+  {
+    sku: 'CF-COA-WOL-05',
+    productName: 'Wool Coat',
+    inventory: [
+      { location: 'SoHo Flagship', available: 8, committed: 1, incoming: 0 },
+      { location: 'Online Store', available: 12, committed: 3, incoming: 15 },
+    ],
+  },
+  {
+    sku: 'CF-CGN-CSH-03',
+    productName: 'Cashmere Cardigan',
+    inventory: [
+      { location: 'Online Store', available: 25, committed: 5, incoming: 10 },
+    ],
+  },
+   {
+    sku: 'CF-SKT-MAX-02',
+    productName: 'Floral Print Maxi Skirt',
+    inventory: [
+      { location: 'SoHo Flagship', available: 0, committed: 1, incoming: 0 },
+      { location: 'Online Store', available: 5, committed: 5, incoming: 10 },
+    ],
+  },
+];
 
-type ShopifyProductNode = {
-    id: string;
-    title: string;
-    productType: string;
-    featuredImage: {
-        url: string;
-    } | null;
-    variants: {
-        nodes: ShopifyVariantNode[];
-    };
-};
-
-type ShopifyProductsResponse = {
-    products: {
-        nodes: ShopifyProductNode[];
-    };
-};
-
-// #endregion
-
-// GraphQL query to fetch products, variants, and inventory levels
-const SHOPIFY_INVENTORY_QUERY = `
-query getProductsWithInventory {
-  products(first: 5, sortKey: CREATED_AT, reverse: true) {
-    nodes {
-      id
-      title
-      productType
-      featuredImage {
-        url(transform: {maxWidth: 400, maxHeight: 300, crop: CENTER})
-      }
-      variants(first: 10) {
-        nodes {
-          sku
-          price
-          inventoryItem {
-            inventoryLevels(first: 10) {
-              nodes {
-                available
-                committed
-                incoming
-                location {
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-`;
 
 /**
- * Fetches and transforms product and inventory data from Shopify.
- * @returns {Promise<ShopifyProductNode[]>}
- */
-async function fetchAndTransformShopifyData(): Promise<ShopifyProductNode[]> {
-    try {
-        const response = await fetchShopifyGraphQL<ShopifyProductsResponse>(SHOPIFY_INVENTORY_QUERY);
-        return response.products.nodes;
-    } catch (e) {
-        console.error("Shopify data fetch failed:", e);
-        // Re-throw the error to be caught by the page and displayed in the Next.js overlay.
-        throw e;
-    }
-}
-
-/**
- * Fetches product data from Shopify and maps it to the app's Product type.
+ * Returns a static list of products.
  * @returns {Promise<Product[]>}
  */
 export async function getProducts(): Promise<Product[]> {
-    const shopifyProducts = await fetchAndTransformShopifyData();
-    
-    return shopifyProducts.map((p): Product => ({
-        id: p.id,
-        name: p.title,
-        // Use first variant for primary SKU and price
-        sku: p.variants.nodes[0]?.sku || 'N/A', 
-        price: parseFloat(p.variants.nodes[0]?.price || '0'),
-        category: p.productType || 'Uncategorized',
-        imageUrl: p.featuredImage?.url || null,
-    }));
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return products;
 }
 
 /**
- * Fetches inventory data from Shopify and maps it to the app's ShopifyInventoryItem type.
- * This function processes data for products that have at least one variant with a SKU.
+ * Returns a static list of Shopify inventory items.
  * @returns {Promise<ShopifyInventoryItem[]>}
  */
 export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
-    const shopifyProducts = await fetchAndTransformShopifyData();
-
-    const inventoryItems: ShopifyInventoryItem[] = [];
-
-    shopifyProducts.forEach(product => {
-        product.variants.nodes.forEach(variant => {
-            // Only process variants that have a SKU
-            if (variant.sku) {
-                inventoryItems.push({
-                    sku: variant.sku,
-                    productName: product.title,
-                    inventory: variant.inventoryItem.inventoryLevels.nodes.map(level => ({
-                        location: level.location.name,
-                        available: level.available,
-                        committed: level.committed,
-                        incoming: level.incoming,
-                    })),
-                });
-            }
-        });
-    });
-
-    return inventoryItems;
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    return shopifyInventory;
 }
 
 
@@ -356,6 +280,4 @@ export async function getDashboardStats() {
         lowStockCount,
     };
 }
-
-
 // #endregion
