@@ -22,6 +22,7 @@ import {
   Warehouse,
   ShoppingCart,
   LayoutGrid,
+  CalendarClock,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -41,6 +42,7 @@ const inventorySubItems = [
     { href: '/inventory/factory', label: 'Factory POs', icon: Factory },
     { href: '/inventory/wms', label: 'WMS', icon: Warehouse },
     { href: '/inventory/shopify', label: 'Shopify', icon: ShoppingCart },
+    { href: '/inventory/first-receipts', label: 'First Receipts', icon: CalendarClock },
 ]
 
 export function MainNav() {

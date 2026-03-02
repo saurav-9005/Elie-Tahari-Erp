@@ -1,3 +1,4 @@
+
 import { shopifyFetch, getProductsQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
@@ -177,6 +178,8 @@ export type ShopifyInventoryItem = {
     available: number;
     committed: number;
     incoming: number;
+    first_inventory_added_at?: string;
+    first_inventory_added_qty?: number;
   }>;
 };
 
@@ -203,15 +206,15 @@ export const shopifyInventory: ShopifyInventoryItem[] = [
     sku: 'CF-DRS-SLK-01',
     productName: 'A-line Silk Dress',
     inventory: [
-      { location: 'SoHo Flagship', available: 5, committed: 2, incoming: 0 },
-      { location: 'Online Store', available: 10, committed: 8, incoming: 20 },
+      { location: 'SoHo Flagship', available: 5, committed: 2, incoming: 0, first_inventory_added_at: '2026-01-15T10:00:00Z', first_inventory_added_qty: 10 },
+      { location: 'Online Store', available: 10, committed: 8, incoming: 20, first_inventory_added_at: '2026-01-20T11:30:00Z', first_inventory_added_qty: 30 },
     ],
   },
   {
     sku: 'CF-COA-WOL-05',
     productName: 'Wool Coat',
     inventory: [
-      { location: 'SoHo Flagship', available: 8, committed: 1, incoming: 0 },
+      { location: 'SoHo Flagship', available: 8, committed: 1, incoming: 0, first_inventory_added_at: '2026-02-01T09:00:00Z', first_inventory_added_qty: 10 },
       { location: 'Online Store', available: 12, committed: 3, incoming: 15 },
     ],
   },
@@ -219,7 +222,7 @@ export const shopifyInventory: ShopifyInventoryItem[] = [
     sku: 'CF-CGN-CSH-03',
     productName: 'Cashmere Cardigan',
     inventory: [
-      { location: 'Online Store', available: 25, committed: 5, incoming: 10 },
+      { location: 'Online Store', available: 25, committed: 5, incoming: 10, first_inventory_added_at: '2026-02-10T14:00:00Z', first_inventory_added_qty: 20 },
     ],
   },
    {
@@ -227,7 +230,7 @@ export const shopifyInventory: ShopifyInventoryItem[] = [
     productName: 'Floral Print Maxi Skirt',
     inventory: [
       { location: 'SoHo Flagship', available: 0, committed: 1, incoming: 0 },
-      { location: 'Online Store', available: 5, committed: 5, incoming: 10 },
+      { location: 'Online Store', available: 5, committed: 5, incoming: 10, first_inventory_added_at: '2026-01-25T16:45:00Z', first_inventory_added_qty: 15 },
     ],
   },
 ];
