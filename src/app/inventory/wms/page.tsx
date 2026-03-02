@@ -19,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { warehouseInventory, type WarehouseInventoryItem, shopifyInventory } from '@/lib/inventory-data';
+import { warehouseInventory, type WarehouseInventoryItem, staticShopifyInventory } from '@/lib/inventory-data';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -42,7 +42,7 @@ export default function WMSInventoryPage() {
     }
   }, [user, isUserLoading, router]);
 
-  const receipts: ReceiptItem[] = shopifyInventory.flatMap(product => 
+  const receipts: ReceiptItem[] = staticShopifyInventory.flatMap(product => 
     product.inventory
       .filter(inv => inv.first_inventory_added_at && inv.first_inventory_added_qty)
       .map(inv => ({
@@ -133,9 +133,12 @@ export default function WMSInventoryPage() {
       </Card>
 
       <div className="space-y-8">
-        <h2 className="font-headline text-2xl font-semibold tracking-tight pt-4 border-t">
-            First Receipts Report
-        </h2>
+        <div className="pt-4 border-t">
+          <h2 className="font-headline text-2xl font-semibold tracking-tight">
+              First Receipts Report
+          </h2>
+          <p className="text-sm text-muted-foreground">This report uses static sample data to demonstrate tracking the first time an SKU was received.</p>
+        </div>
         {sortedMonths.length > 0 ? (
           sortedMonths.map(month => (
             <Card key={month}>

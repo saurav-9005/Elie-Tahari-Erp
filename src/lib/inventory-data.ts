@@ -1,5 +1,5 @@
 
-import { shopifyFetch, getProductsQuery } from './shopify-client';
+import { shopifyFetch, getProductsQuery, getInventoryLevelsQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -169,6 +169,26 @@ type ShopifyProduct = {
     }
 }
 
+// The type for a product variant returned from the Shopify Admin API for inventory
+type ShopifyProductVariant = {
+  sku: string;
+  product: {
+      title: string;
+  };
+  inventoryItem: {
+      inventoryLevels: {
+          edges: {
+              node: {
+                  available: number;
+                  location: {
+                      name: string;
+                  }
+              }
+          }[]
+      }
+  }
+}
+
 // Local type for app data structure
 export type ShopifyInventoryItem = {
   sku: string;
@@ -201,7 +221,8 @@ export const products: Product[] = [
     { id: 'gid://shopify/Product/5', sku: 'CF-BLO-LIN-06', name: 'Linen Blouse', category: 'Blouses', price: 120.00, imageUrl: 'https://images.unsplash.com/photo-1621932943339-43c7b738d821?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxzaWxrJTIwYmxvdXNlfGVufDB8fHx8MTc3MTk1NDI5NHww&ixlib=rb-4.1.0&q=80&w=1080' },
 ];
 
-export const shopifyInventory: ShopifyInventoryItem[] = [
+// This is now STATIC data, used ONLY for the "First Receipts" demo report.
+export const staticShopifyInventory: ShopifyInventoryItem[] = [
   {
     sku: 'CF-DRS-SLK-01',
     productName: 'A-line Silk Dress',
@@ -268,13 +289,40 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 /**
- * Returns a static list of Shopify inventory items.
+ * Fetches LIVE inventory data from the Shopify Admin API.
+ * Note: 'committed' and 'incoming' are not available from this basic query and will be set to 0.
+ * The 'first_inventory_added' fields are also not available and will be undefined.
  * @returns {Promise<ShopifyInventoryItem[]>}
  */
 export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    return shopifyInventory;
+  const res = await shopifyFetch<{ productVariants: { edges: { node: ShopifyProductVariant }[] } }>({
+    query: getInventoryLevelsQuery,
+    variables: {
+        first: 25,
+    },
+  }, {
+      cache: 'no-store',
+      tags: ['inventory'],
+  });
+
+  const inventoryItems: ShopifyInventoryItem[] = res.productVariants.edges
+    .filter(({ node }) => node.sku && node.inventoryItem.inventoryLevels.edges.length > 0)
+    .map(({ node }) => {
+      const inventory: ShopifyInventoryItem['inventory'] = node.inventoryItem.inventoryLevels.edges.map((levelEdge) => ({
+          location: levelEdge.node.location.name,
+          available: levelEdge.node.available,
+          committed: 0, // NOTE: Not available from this basic query
+          incoming: 0,  // NOTE: Not available from this basic query
+      }));
+
+      return {
+          sku: node.sku,
+          productName: node.product.title,
+          inventory,
+      };
+  });
+  
+  return inventoryItems;
 }
 
 

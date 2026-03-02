@@ -122,3 +122,30 @@ export const getProductsQuery = /* GraphQL */ `
     }
   }
 `;
+
+export const getInventoryLevelsQuery = /* GraphQL */ `
+  query getInventoryLevels($first: Int!) {
+    productVariants(first: $first, query: "inventory_total:>0") {
+      edges {
+        node {
+          sku
+          product {
+            title
+          }
+          inventoryItem {
+            inventoryLevels(first: 5) {
+              edges {
+                node {
+                  available
+                  location {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
