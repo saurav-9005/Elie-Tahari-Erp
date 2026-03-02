@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Logo } from '@/components/logo';
 import Link from 'next/link';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { PageLoader } from '@/components/page-loader';
 
 export const metadata: Metadata = {
   title: 'Elie Tahari ERP',
@@ -36,6 +37,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
+        <PageLoader />
         <FirebaseClientProvider>
           <SidebarProvider>
             <Sidebar>
