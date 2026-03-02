@@ -16,7 +16,6 @@ import {
   Barcode,
   TrendingUp,
   AreaChart,
-  Shirt,
   ChevronDown,
   ClipboardList,
   Factory,
@@ -30,7 +29,6 @@ import { cn } from '@/lib/utils';
 
 const topLevelItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/products', label: 'Product Catalog', icon: Shirt },
   { href: '/upc-code', label: 'UPC code', icon: Barcode },
   { href: '/sale-report', label: 'Sale Report', icon: TrendingUp },
   { href: '/adesiem-dx', label: 'Adesiem DX', icon: AreaChart },
