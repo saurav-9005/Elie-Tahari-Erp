@@ -27,7 +27,7 @@ export default function FactoryInventoryPage() {
       </div>
       <div className="flex-1 rounded-lg border">
         <iframe
-          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRt8pFiwXal1MpXxq4RlaKmJcXoJs-t641S8s-GmVg1Dnya7t0tKw9SZ4zWAoPbOw/pubhtml"
+          src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRt8pFiwXal1MpXxq4RlaKmJcXoJs-t641S8s-GmVg1Dnya7t0tKw9SZ4zWAoPbOw/pubhtml?widget=true"
           className="h-full w-full rounded-lg"
           title="Factory POs"
         />
