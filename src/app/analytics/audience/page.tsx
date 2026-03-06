@@ -10,7 +10,7 @@ export default function AudiencePage() {
       </p>
       <div className="flex-1 rounded-lg border">
         <iframe
-          src="https://lookerstudio.google.com/s/rBUDdD0wnwY"
+          src="https://lookerstudio.google.com/embed/reporting/ee14d7e1-2cc3-4093-89e6-1e593524848f"
           className="h-full w-full rounded-lg"
           title="Audience Analytics"
         />
