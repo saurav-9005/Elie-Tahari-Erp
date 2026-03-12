@@ -182,11 +182,6 @@ export const getInventoryItemsQuery = /* GraphQL */ `
       edges {
         node {
           sku
-          variant {
-            product {
-              title
-            }
-          }
           inventoryLevels(first: 5) {
             edges {
               node {

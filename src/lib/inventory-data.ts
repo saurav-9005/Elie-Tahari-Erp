@@ -172,11 +172,6 @@ type ShopifyProduct = {
 // The type for an inventory item from the new query
 type ShopifyInventoryItemNode = {
   sku: string | null;
-  variant: {
-      product: {
-          title: string;
-      }
-  } | null;
   inventoryLevels: {
       edges: {
           node: {
@@ -268,7 +263,7 @@ export async function getProducts(): Promise<Product[]> {
     const res = await shopifyFetch<{ products: { edges: { node: ShopifyProduct }[] } }>({
         query: getProductsQuery,
         variables: {
-        first: 5,
+        first: 250,
         },
     }, {
         tags: ['products'],
@@ -293,23 +288,25 @@ export async function getProducts(): Promise<Product[]> {
 
 /**
  * Fetches LIVE inventory data from the Shopify Admin API.
- * Note: 'committed' and 'incoming' are not available from this basic query and will be set to 0.
- * The 'first_inventory_added' fields are also not available and will be undefined.
+ * This function now separates concerns: fetches inventory, then fetches products to map names.
  * @returns {Promise<ShopifyInventoryItem[]>}
  */
 export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
   const res = await shopifyFetch<{ inventoryItems: { edges: { node: ShopifyInventoryItemNode }[] } }>({
     query: getInventoryItemsQuery,
     variables: {
-        first: 25,
+        first: 250,
     },
   }, {
       cache: 'no-store',
       tags: ['inventory'],
   });
 
+  const allProducts = await getProducts();
+  const productMap = new Map(allProducts.map(p => [p.sku, p.name]));
+
   const inventoryItems: ShopifyInventoryItem[] = res.inventoryItems.edges
-    .filter(({ node }) => node.sku && node.variant && node.inventoryLevels.edges.length > 0)
+    .filter(({ node }) => node.sku && node.inventoryLevels.edges.length > 0)
     .map(({ node }) => {
       const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => {
           const getQuantity = (name: string) => levelEdge.node.quantities?.find(q => q.name === name)?.quantity ?? 0;
@@ -324,7 +321,7 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
 
       return {
           sku: node.sku!,
-          productName: node.variant!.product.title,
+          productName: productMap.get(node.sku!) || node.sku!,
           inventory,
       };
   });
@@ -448,8 +445,7 @@ export async function getCustomers(): Promise<Customer[]> {
 
 export async function getDashboardStats() {
     const shopifyInventoryData = await getShopifyInventory();
-    // Using the static products list here for stats calculation
-    const productsData = products;
+    const productsData = await getProducts();
     
     const wmsUnits = warehouseInventory.reduce((sum, item) => sum + item.availableQty, 0);
     const shopifyUnits = shopifyInventoryData.reduce((sum, item) => sum + item.inventory.reduce((locSum, loc) => locSum + loc.available, 0), 0);
@@ -496,3 +492,4 @@ export async function getDashboardStats() {
     };
 }
 // #endregion
+
