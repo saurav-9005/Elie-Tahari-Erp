@@ -176,6 +176,19 @@ export const getProductsQuery = /* GraphQL */ `
   }
 `;
 
+export const getLocationsQuery = /* GraphQL */ `
+  query getLocations($first: Int!) {
+    locations(first: $first) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
 export const getInventoryItemsQuery = /* GraphQL */ `
   query getInventoryItems($first: Int!) {
     inventoryItems(first: $first) {
@@ -186,7 +199,7 @@ export const getInventoryItemsQuery = /* GraphQL */ `
             edges {
               node {
                 location {
-                  name
+                  id
                 }
                 quantities(names: ["available", "committed", "incoming"]) {
                   name

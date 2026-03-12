@@ -1,5 +1,5 @@
 
-import { shopifyFetch, getProductsQuery, getInventoryItemsQuery, getOrdersQuery, getCustomersQuery } from './shopify-client';
+import { shopifyFetch, getProductsQuery, getInventoryItemsQuery, getOrdersQuery, getCustomersQuery, getLocationsQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -176,7 +176,7 @@ type ShopifyInventoryItemNode = {
       edges: {
           node: {
               location: {
-                  name: string;
+                  id: string;
               };
               quantities: {
                   name: string;
@@ -254,6 +254,20 @@ export const staticShopifyInventory: ShopifyInventoryItem[] = [
   },
 ];
 
+async function getLocations(): Promise<Map<string, string>> {
+    const res = await shopifyFetch<{ locations: { edges: { node: { id: string; name: string } }[] } }>({
+        query: getLocationsQuery,
+        variables: { first: 50 }
+    }, {
+        cache: 'no-store',
+        tags: ['locations'],
+    });
+    const locationMap = new Map<string, string>();
+    res.locations.edges.forEach(({ node }) => {
+        locationMap.set(node.id, node.name);
+    });
+    return locationMap;
+}
 
 /**
  * Fetches products from the Shopify Admin API.
@@ -292,7 +306,9 @@ export async function getProducts(): Promise<Product[]> {
  * @returns {Promise<ShopifyInventoryItem[]>}
  */
 export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
-  const res = await shopifyFetch<{ inventoryItems: { edges: { node: ShopifyInventoryItemNode }[] } }>({
+  const locationsMap = await getLocations();
+
+  const inventoryRes = await shopifyFetch<{ inventoryItems: { edges: { node: ShopifyInventoryItemNode }[] } }>({
     query: getInventoryItemsQuery,
     variables: {
         first: 250,
@@ -305,14 +321,16 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
   const allProducts = await getProducts();
   const productMap = new Map(allProducts.map(p => [p.sku, p.name]));
 
-  const inventoryItems: ShopifyInventoryItem[] = res.inventoryItems.edges
+  const inventoryItems: ShopifyInventoryItem[] = inventoryRes.inventoryItems.edges
     .filter(({ node }) => node.sku && node.inventoryLevels.edges.length > 0)
     .map(({ node }) => {
       const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => {
           const getQuantity = (name: string) => levelEdge.node.quantities?.find(q => q.name === name)?.quantity ?? 0;
           
+          const locationName = locationsMap.get(levelEdge.node.location.id) || 'Unknown Location';
+
           return {
-            location: levelEdge.node.location.name,
+            location: locationName,
             available: getQuantity('available'),
             committed: getQuantity('committed'),
             incoming: getQuantity('incoming'),
