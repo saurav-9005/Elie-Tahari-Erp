@@ -140,7 +140,7 @@ export const getInventoryItemsQuery = /* GraphQL */ `
                 location {
                   name
                 }
-                quantities(names: ["available"]) {
+                quantities(names: ["available", "committed", "incoming"]) {
                   name
                   quantity
                 }
