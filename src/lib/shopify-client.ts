@@ -95,6 +95,59 @@ export async function shopifyFetch<T>({
   }
 }
 
+export const getOrdersQuery = /* GraphQL */ `
+  query getOrders($first: Int!) {
+    orders(first: $first, sortKey: PROCESSED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          name
+          createdAt
+          displayFinancialStatus
+          displayFulfillmentStatus
+          totalPriceSet {
+            shopMoney {
+              amount
+              currencyCode
+            }
+          }
+          customer {
+            firstName
+            lastName
+            email
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const getCustomersQuery = /* GraphQL */ `
+  query getCustomers($first: Int!) {
+    customers(first: $first, sortKey: UPDATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          firstName
+          lastName
+          email
+          phone
+          numberOfOrders
+          totalSpentV2 {
+            amount
+            currencyCode
+          }
+          defaultAddress {
+            city
+            province
+            country
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const getProductsQuery = /* GraphQL */ `
   query getProducts($first: Int!, $query: String) {
     products(first: $first, query: $query) {

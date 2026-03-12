@@ -24,6 +24,8 @@ import {
   LayoutGrid,
   PieChart,
   Users,
+  ReceiptText,
+  UsersRound,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,6 +35,8 @@ import { cn } from '@/lib/utils';
 const topLevelItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/products', label: 'Product Catalog', icon: LayoutGrid },
+  { href: '/orders', label: 'Orders', icon: ReceiptText },
+  { href: '/customers', label: 'Customers', icon: Users },
   { href: '/upc-code', label: 'UPC code', icon: Barcode },
   { href: '/sale-report', label: 'Sale Report', icon: TrendingUp },
   { href: '/adesiem-dx', label: 'Adesiem DX', icon: AreaChart },
@@ -46,7 +50,7 @@ const inventorySubItems = [
 ]
 
 const analyticsSubItems = [
-    { href: '/analytics/audience', label: 'Audience', icon: Users },
+    { href: '/analytics/audience', label: 'Audience', icon: UsersRound },
 ]
 
 export function MainNav() {

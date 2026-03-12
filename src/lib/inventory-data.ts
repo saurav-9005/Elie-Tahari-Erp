@@ -1,5 +1,5 @@
 
-import { shopifyFetch, getProductsQuery, getInventoryItemsQuery } from './shopify-client';
+import { shopifyFetch, getProductsQuery, getInventoryItemsQuery, getOrdersQuery, getCustomersQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -331,6 +331,119 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
   
   return inventoryItems;
 }
+
+// #region Orders
+export type ShopifyOrder = {
+  id: string;
+  name: string; // The order number like #1001
+  createdAt: string;
+  displayFinancialStatus: 'PAID' | 'PENDING' | 'REFUNDED' | 'PARTIALLY_REFUNDED' | 'VOIDED' | 'AUTHORIZED';
+  displayFulfillmentStatus: 'FULFILLED' | 'UNFULFILLED' | 'PARTIALLY_FULFILLED' | 'RESTOCKED';
+  totalPriceSet: {
+    shopMoney: {
+      amount: string;
+      currencyCode: string;
+    }
+  };
+  customer: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+  } | null;
+}
+
+export type Order = {
+  id: string;
+  orderNumber: string;
+  orderId: string;
+  date: string;
+  customerName: string;
+  customerEmail: string;
+  total: number;
+  currency: string;
+  financialStatus: ShopifyOrder['displayFinancialStatus'];
+  fulfillmentStatus: ShopifyOrder['displayFulfillmentStatus'];
+}
+
+export async function getOrders(): Promise<Order[]> {
+  const res = await shopifyFetch<{ orders: { edges: { node: ShopifyOrder }[] } }>({
+    query: getOrdersQuery,
+    variables: {
+      first: 20, // Fetching more orders
+    },
+  }, {
+    cache: 'no-store',
+    tags: ['orders'],
+  });
+
+  return res.orders.edges.map(({ node }) => ({
+    id: node.id,
+    orderNumber: node.name,
+    orderId: node.id.split('/').pop()!,
+    date: node.createdAt,
+    customerName: [node.customer?.firstName, node.customer?.lastName].filter(Boolean).join(' ') || 'N/A',
+    customerEmail: node.customer?.email || 'N/A',
+    total: parseFloat(node.totalPriceSet.shopMoney.amount),
+    currency: node.totalPriceSet.shopMoney.currencyCode,
+    financialStatus: node.displayFinancialStatus,
+    fulfillmentStatus: node.displayFulfillmentStatus,
+  }));
+}
+// #endregion
+
+// #region Customers
+export type ShopifyCustomer = {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  numberOfOrders: string;
+  totalSpentV2: {
+    amount: string;
+    currencyCode: string;
+  };
+  defaultAddress: {
+    city: string | null;
+    province: string | null;
+    country: string | null;
+  } | null;
+}
+
+export type Customer = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  orderCount: number;
+  totalSpent: number;
+  currency: string;
+}
+
+export async function getCustomers(): Promise<Customer[]> {
+  const res = await shopifyFetch<{ customers: { edges: { node: ShopifyCustomer }[] } }>({
+    query: getCustomersQuery,
+    variables: {
+      first: 20,
+    },
+  }, {
+    cache: 'no-store',
+    tags: ['customers'],
+  });
+
+  return res.customers.edges.map(({ node }) => ({
+    id: node.id,
+    name: [node.firstName, node.lastName].filter(Boolean).join(' ') || 'Unnamed Customer',
+    email: node.email || 'No email',
+    phone: node.phone || 'No phone',
+    location: [node.defaultAddress?.city, node.defaultAddress?.province, node.defaultAddress?.country].filter(Boolean).join(', ') || 'No address',
+    orderCount: parseInt(node.numberOfOrders, 10),
+    totalSpent: parseFloat(node.totalSpentV2.amount),
+    currency: node.totalSpentV2.currencyCode,
+  }));
+}
+// #endregion
 
 
 export async function getDashboardStats() {
