@@ -10,7 +10,7 @@ export default function UpcCodePage() {
       </p>
       <div className="flex-1 rounded-lg border">
         <iframe
-          src="https://elie-tahari.vercel.app/"
+          src="https://elietahari-product-onboard.vercel.app/"
           className="h-full w-full rounded-lg"
           title="UPC Code Generator"
         />
