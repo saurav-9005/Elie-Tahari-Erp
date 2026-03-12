@@ -123,23 +123,23 @@ export const getProductsQuery = /* GraphQL */ `
   }
 `;
 
-export const getInventoryLevelsQuery = /* GraphQL */ `
-  query getInventoryLevels($first: Int!) {
-    productVariants(first: $first, query: "inventory_total:>0") {
+export const getInventoryItemsQuery = /* GraphQL */ `
+  query getInventoryItems($first: Int!) {
+    inventoryItems(first: $first) {
       edges {
         node {
           sku
-          product {
-            title
+          variant {
+            product {
+              title
+            }
           }
-          inventoryItem {
-            inventoryLevels(first: 5) {
-              edges {
-                node {
-                  available
-                  location {
-                    name
-                  }
+          inventoryLevels(first: 5) {
+            edges {
+              node {
+                available
+                location {
+                  name
                 }
               }
             }

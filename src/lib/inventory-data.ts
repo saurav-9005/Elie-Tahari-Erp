@@ -1,5 +1,5 @@
 
-import { shopifyFetch, getProductsQuery, getInventoryLevelsQuery } from './shopify-client';
+import { shopifyFetch, getProductsQuery, getInventoryItemsQuery } from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -169,23 +169,23 @@ type ShopifyProduct = {
     }
 }
 
-// The type for a product variant returned from the Shopify Admin API for inventory
-type ShopifyProductVariant = {
-  sku: string;
-  product: {
-      title: string;
-  };
-  inventoryItem: {
-      inventoryLevels: {
-          edges: {
-              node: {
-                  available: number;
-                  location: {
-                      name: string;
-                  }
-              }
-          }[]
+// The type for an inventory item from the new query
+type ShopifyInventoryItemNode = {
+  sku: string | null; // sku can be null
+  variant: {
+      product: {
+          title: string;
       }
+  } | null;
+  inventoryLevels: {
+      edges: {
+          node: {
+              available: number;
+              location: {
+                  name: string;
+              }
+          }
+      }[]
   }
 }
 
@@ -295,8 +295,8 @@ export async function getProducts(): Promise<Product[]> {
  * @returns {Promise<ShopifyInventoryItem[]>}
  */
 export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
-  const res = await shopifyFetch<{ productVariants: { edges: { node: ShopifyProductVariant }[] } }>({
-    query: getInventoryLevelsQuery,
+  const res = await shopifyFetch<{ inventoryItems: { edges: { node: ShopifyInventoryItemNode }[] } }>({
+    query: getInventoryItemsQuery,
     variables: {
         first: 25,
     },
@@ -305,19 +305,19 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
       tags: ['inventory'],
   });
 
-  const inventoryItems: ShopifyInventoryItem[] = res.productVariants.edges
-    .filter(({ node }) => node.sku && node.inventoryItem.inventoryLevels.edges.length > 0)
+  const inventoryItems: ShopifyInventoryItem[] = res.inventoryItems.edges
+    .filter(({ node }) => node.sku && node.variant && node.inventoryLevels.edges.length > 0)
     .map(({ node }) => {
-      const inventory: ShopifyInventoryItem['inventory'] = node.inventoryItem.inventoryLevels.edges.map((levelEdge) => ({
+      const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => ({
           location: levelEdge.node.location.name,
           available: levelEdge.node.available,
-          committed: 0, // NOTE: Not available from this basic query
-          incoming: 0,  // NOTE: Not available from this basic query
+          committed: 0, // NOTE: Not available from this query
+          incoming: 0,  // NOTE: Not available from this query
       }));
 
       return {
-          sku: node.sku,
-          productName: node.product.title,
+          sku: node.sku!,
+          productName: node.variant!.product.title,
           inventory,
       };
   });
