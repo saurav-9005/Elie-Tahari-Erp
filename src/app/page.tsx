@@ -100,9 +100,10 @@ async function KpiCards() {
     );
   } catch (error: any) {
     if (error.name === 'ShopifyFetchError') {
+        const errorDetails = error.errors ? JSON.stringify(error.errors, null, 2) : 'No further details available.';
         return (
             <div className="md:col-span-2 lg:col-span-4">
-                <ShopifyApiError />
+                <ShopifyApiError details={errorDetails} />
             </div>
         )
     }

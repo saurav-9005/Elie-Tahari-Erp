@@ -24,6 +24,7 @@ export default async function ProductsPage() {
     );
   } catch (error: any) {
     if (error.name === 'ShopifyFetchError') {
+      const errorDetails = error.errors ? JSON.stringify(error.errors, null, 2) : 'No further details available.';
       return (
          <div className="flex flex-col gap-8">
             <div>
@@ -34,7 +35,7 @@ export default async function ProductsPage() {
                     There was a problem connecting to your Shopify store.
                 </p>
             </div>
-            <ShopifyApiError />
+            <ShopifyApiError details={errorDetails} />
         </div>
       );
     }

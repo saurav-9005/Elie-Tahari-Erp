@@ -88,6 +88,7 @@ export default async function ShopifyInventoryPage() {
     );
   } catch (error: any) {
     if (error.name === 'ShopifyFetchError') {
+      const errorDetails = error.errors ? JSON.stringify(error.errors, null, 2) : 'No further details available.';
       return (
          <div className="flex flex-col gap-8">
             <div className="flex items-center gap-4">
@@ -106,7 +107,7 @@ export default async function ShopifyInventoryPage() {
                 </p>
               </div>
             </div>
-            <ShopifyApiError />
+            <ShopifyApiError details={errorDetails} />
         </div>
       );
     }
