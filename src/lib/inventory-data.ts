@@ -171,7 +171,7 @@ type ShopifyProduct = {
 
 // The type for an inventory item from the new query
 type ShopifyInventoryItemNode = {
-  sku: string | null; // sku can be null
+  sku: string | null;
   variant: {
       product: {
           title: string;
@@ -180,10 +180,13 @@ type ShopifyInventoryItemNode = {
   inventoryLevels: {
       edges: {
           node: {
-              available: number;
               location: {
                   name: string;
-              }
+              };
+              quantities: {
+                  name: string;
+                  quantity: number;
+              }[];
           }
       }[]
   }
@@ -308,12 +311,15 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
   const inventoryItems: ShopifyInventoryItem[] = res.inventoryItems.edges
     .filter(({ node }) => node.sku && node.variant && node.inventoryLevels.edges.length > 0)
     .map(({ node }) => {
-      const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => ({
-          location: levelEdge.node.location.name,
-          available: levelEdge.node.available,
-          committed: 0, // NOTE: Not available from this query
-          incoming: 0,  // NOTE: Not available from this query
-      }));
+      const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => {
+          const availableQuantity = levelEdge.node.quantities?.find(q => q.name === 'available')?.quantity ?? 0;
+          return {
+            location: levelEdge.node.location.name,
+            available: availableQuantity,
+            committed: 0, // NOTE: Not available from this query
+            incoming: 0,  // NOTE: Not available from this query
+          }
+      });
 
       return {
           sku: node.sku!,

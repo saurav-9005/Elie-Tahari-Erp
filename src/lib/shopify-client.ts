@@ -137,9 +137,12 @@ export const getInventoryItemsQuery = /* GraphQL */ `
           inventoryLevels(first: 5) {
             edges {
               node {
-                available
                 location {
                   name
+                }
+                quantities(names: ["available"]) {
+                  name
+                  quantity
                 }
               }
             }
