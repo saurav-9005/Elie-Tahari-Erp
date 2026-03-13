@@ -182,7 +182,6 @@ export const getLocationsQuery = /* GraphQL */ `
       edges {
         node {
           id
-          name
         }
       }
     }

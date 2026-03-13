@@ -255,7 +255,7 @@ export const staticShopifyInventory: ShopifyInventoryItem[] = [
 ];
 
 async function getLocations(): Promise<Map<string, string>> {
-    const res = await shopifyFetch<{ locations: { edges: { node: { id: string; name: string } }[] } }>({
+    const res = await shopifyFetch<{ locations: { edges: { node: { id: string } }[] } }>({
         query: getLocationsQuery,
         variables: { first: 50 }
     }, {
@@ -264,7 +264,7 @@ async function getLocations(): Promise<Map<string, string>> {
     });
     const locationMap = new Map<string, string>();
     res.locations.edges.forEach(({ node }) => {
-        locationMap.set(node.id, node.name);
+        locationMap.set(node.id, node.id);
     });
     return locationMap;
 }
@@ -327,7 +327,7 @@ export async function getShopifyInventory(): Promise<ShopifyInventoryItem[]> {
       const inventory: ShopifyInventoryItem['inventory'] = node.inventoryLevels.edges.map((levelEdge) => {
           const getQuantity = (name: string) => levelEdge.node.quantities?.find(q => q.name === name)?.quantity ?? 0;
           
-          const locationName = locationsMap.get(levelEdge.node.location.id) || 'Unknown Location';
+          const locationName = locationsMap.get(levelEdge.node.location.id) || 'Unknown Location ID';
 
           return {
             location: locationName,
@@ -510,4 +510,3 @@ export async function getDashboardStats() {
     };
 }
 // #endregion
-
