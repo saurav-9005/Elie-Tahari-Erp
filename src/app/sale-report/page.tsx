@@ -10,7 +10,7 @@ export default function SaleReportPage() {
       </p>
       <div className="flex-1 rounded-lg border">
         <iframe
-          src="https://et-metabase.clients-suntek.com/public/dashboard/d9d9209d-3744-49b9-b579-1ca70fad15e9?date_filter=past1weeks"
+          src="http://analytics.elietahari.com:4000/public/dashboard/daa93a89-0976-475c-a07d-045c23a4a14a?date_filter=past1weeks"
           className="h-full w-full rounded-lg"
           title="Sale Report"
         />
