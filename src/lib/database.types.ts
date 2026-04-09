@@ -345,6 +345,26 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string;
       };
+      erp_inventory_dashboard_stats: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_inventory_top_sellers: {
+        Args: { p_page?: number };
+        Returns: Json;
+      };
+      erp_inventory_stock_alerts: {
+        Args: { p_page?: number };
+        Returns: Json;
+      };
+      erp_wms_inventory: {
+        Args: { p_page?: number };
+        Returns: Json;
+      };
+      erp_shopify_inventory: {
+        Args: { p_page?: number };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;
