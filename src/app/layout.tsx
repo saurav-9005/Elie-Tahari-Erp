@@ -1,19 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarInset,
-  SidebarProvider,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { MainNav } from '@/components/main-nav';
-import { UserNav } from '@/components/user-nav';
 import { Toaster } from '@/components/ui/toaster';
-import { Logo } from '@/components/logo';
-import Link from 'next/link';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PageLoader } from '@/components/page-loader';
 
@@ -42,24 +30,7 @@ export default function RootLayout({
           <PageLoader />
         </Suspense>
         <FirebaseClientProvider>
-          <SidebarProvider>
-            <Sidebar>
-              <SidebarHeader className="h-16 justify-center">
-                <Link href="/">
-                  <Logo />
-                </Link>
-              </SidebarHeader>
-              <SidebarContent>
-                <MainNav />
-              </SidebarContent>
-            </Sidebar>
-            <SidebarInset>
-              <header className="flex h-14 items-center justify-end gap-4 border-b bg-background/95 px-4 backdrop-blur-sm lg:px-6">
-                <UserNav />
-              </header>
-              <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
-            </SidebarInset>
-          </SidebarProvider>
+          <div className="min-h-screen bg-background">{children}</div>
           <Toaster />
         </FirebaseClientProvider>
       </body>
