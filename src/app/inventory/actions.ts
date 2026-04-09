@@ -1,6 +1,11 @@
 'use server';
 
-import { factoryInventory, warehouseInventory, shopifyInventory } from '@/lib/inventory-data';
+import {
+  factoryInventory,
+  warehouseInventory,
+  staticShopifyInventory,
+  type ShopifyInventoryItem,
+} from '@/lib/inventory-data';
 
 type ConsolidatedInventoryItem = {
     sku: string;
@@ -18,21 +23,25 @@ function getConsolidatedInventory(): ConsolidatedInventoryItem[] {
     const inventoryMap = new Map<string, ConsolidatedInventoryItem>();
 
     const allSkus = new Set([
-        ...factoryInventory.map(i => i.sku), 
-        ...warehouseInventory.map(i => i.sku), 
-        ...shopifyInventory.map(i => i.sku)
+        ...factoryInventory.map((i) => i.sku),
+        ...warehouseInventory.map((i) => i.sku),
+        ...staticShopifyInventory.map((i) => i.sku),
     ]);
 
     for (const sku of allSkus) {
-        const factoryItem = factoryInventory.find(i => i.sku === sku);
-        const warehouseItem = warehouseInventory.find(i => i.sku === sku);
-        const shopifyItem = shopifyInventory.find(i => i.sku === sku);
+        const factoryItem = factoryInventory.find((i) => i.sku === sku);
+        const warehouseItem = warehouseInventory.find((i) => i.sku === sku);
+        const shopifyItem = staticShopifyInventory.find((i) => i.sku === sku);
 
         const productName = factoryItem?.styleName || warehouseItem?.productName || shopifyItem?.productName || 'Unknown Product';
 
         const factoryQty = factoryItem?.quantity || 0;
         const warehouseQty = warehouseItem?.availableQty || 0;
-        const shopifySellableQty = shopifyItem?.inventory.reduce((acc, loc) => acc + loc.available, 0) || 0;
+        const shopifySellableQty =
+            shopifyItem?.inventory.reduce(
+                (acc: number, loc: ShopifyInventoryItem['inventory'][number]) => acc + loc.available,
+                0
+            ) || 0;
         
         // For this demo, sellable is what's in the warehouse and what's available on Shopify.
         // This logic can be much more complex.

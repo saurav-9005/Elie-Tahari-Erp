@@ -1,5 +1,14 @@
 
-import { shopifyFetch, getProductsQuery, getInventoryItemsQuery, getOrdersQuery, getCustomersQuery, getLocationsQuery } from './shopify-client';
+import {
+  shopifyFetch,
+  getProductsQuery,
+  getProductsByCreatedDateQuery,
+  getInventoryItemsQuery,
+  getOrdersQuery,
+  getOrdersLineItemsNetSalesQuery,
+  getCustomersQuery,
+  getLocationsQuery,
+} from './shopify-client';
 
 // #region Factory & WMS Mock Data (remains unchanged)
 export type FactoryInventoryItem = {
@@ -300,6 +309,308 @@ export async function getProducts(): Promise<Product[]> {
     return products;
 }
 
+/** Shopify Admin search: products created on or after this date (inclusive). Excludes pre-2023 catalog. */
+export const LEGACY_PRODUCT_CREATED_FROM = '2023-01-01';
+
+/** Shopify Admin search: products created strictly before this date (UTC date string). */
+export const LEGACY_PRODUCT_CREATED_BEFORE = '2025-07-01';
+
+/** Combined product search for Analytics → Inventory (2023+ only, before July 2025). */
+export const LEGACY_PRODUCT_ANALYTICS_SHOPIFY_SEARCH = `created_at:>=${LEGACY_PRODUCT_CREATED_FROM} created_at:<${LEGACY_PRODUCT_CREATED_BEFORE}`;
+
+type LegacyShopifyProductNode = {
+  id: string;
+  createdAt: string;
+  title: string;
+  handle: string;
+  vendor: string | null;
+  productType: string | null;
+  tags: string[];
+  featuredImage: { url: string; altText: string } | null;
+  variants: {
+    edges: { node: { id: string; sku: string; price: string } }[];
+  };
+};
+
+export type LegacyProductInventoryAnalytics = {
+  productId: string;
+  createdAt: string;
+  title: string;
+  handle: string;
+  sku: string;
+  price: number;
+  imageUrl: string | null;
+  productName: string;
+  /** Shopify product vendor. */
+  vendor: string;
+  /** Uses Shopify `productType` as the channel / assortment label. */
+  channel: string;
+  inventory: ShopifyInventoryItem['inventory'];
+};
+
+/**
+ * Up to `limit` Shopify products created from `LEGACY_PRODUCT_CREATED_FROM` through before July 1, 2025
+ * (oldest first), with live inventory levels.
+ */
+export async function getLegacyProductsInventoryAnalytics(
+  limit = 5
+): Promise<LegacyProductInventoryAnalytics[]> {
+  const searchQuery = LEGACY_PRODUCT_ANALYTICS_SHOPIFY_SEARCH;
+  const fetchFirst = Math.min(50, limit * 10);
+  const res = await shopifyFetch<{
+    products: { edges: { node: LegacyShopifyProductNode }[] };
+  }>(
+    {
+      query: getProductsByCreatedDateQuery,
+      variables: { first: fetchFirst, query: searchQuery },
+    },
+    { cache: 'no-store', tags: ['analytics-legacy-inventory'] }
+  );
+
+  const fromTime = Date.parse(`${LEGACY_PRODUCT_CREATED_FROM}T00:00:00.000Z`);
+  const productRows = res.products.edges
+    .map(({ node }) => {
+      const variant = node.variants.edges[0]?.node;
+      const sku = variant?.sku?.trim();
+      if (!sku) return null;
+      if (Number.isFinite(fromTime) && Date.parse(node.createdAt) < fromTime) return null;
+      return {
+        productId: node.id,
+        createdAt: node.createdAt,
+        title: node.title,
+        handle: node.handle,
+        sku,
+        price: parseFloat(variant?.price || '0'),
+        imageUrl: node.featuredImage?.url ?? null,
+        vendor: (node.vendor ?? '').trim() || '—',
+        channel: (node.productType ?? '').trim() || '—',
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+    .slice(0, limit);
+
+  const allInventory = await getShopifyInventory();
+  const bySku = new Map(allInventory.map((item) => [item.sku, item]));
+
+  return productRows.map((row) => {
+    const inv = bySku.get(row.sku);
+    return {
+      ...row,
+      productName: inv?.productName ?? row.title,
+      inventory: inv?.inventory ?? [],
+    };
+  });
+}
+
+const ORDER_NET_SALES_PAGE_SIZE = 50;
+const ORDER_NET_SALES_MAX_PAGES = 40;
+
+/** Max orders loaded per date bucket (before / after cutoff) for net-sales aggregation. */
+export const SHOPIFY_ORDER_NET_SALES_CAP_PER_PERIOD =
+  ORDER_NET_SALES_PAGE_SIZE * ORDER_NET_SALES_MAX_PAGES;
+
+type OrderNodeNetSales = {
+  id: string;
+  lineItems: {
+    edges: {
+      node: {
+        sku: string | null;
+        quantity: number;
+        variant: { sku: string | null } | null;
+        discountedTotalSet: { shopMoney: { amount: string; currencyCode: string } };
+      };
+    }[];
+  };
+  refunds: {
+    refundLineItems: {
+      edges: {
+        node: {
+          subtotalSet: { shopMoney: { amount: string; currencyCode: string } };
+          lineItem: {
+            sku: string | null;
+            variant: { sku: string | null } | null;
+          } | null;
+        };
+      }[];
+    };
+  }[];
+};
+
+function lineItemSku(node: {
+  sku: string | null;
+  variant: { sku: string | null } | null;
+}): string {
+  const raw = (node.sku || node.variant?.sku || '').trim();
+  return raw;
+}
+
+function aggregateNetSalesBySku(
+  orders: OrderNodeNetSales[],
+  skuSet: Set<string>
+): { totals: Map<string, number>; currencyCode: string } {
+  const totals = new Map<string, number>();
+  let currencyCode = 'USD';
+
+  for (const order of orders) {
+    for (const { node: line } of order.lineItems.edges) {
+      const sku = lineItemSku(line);
+      if (!sku || !skuSet.has(sku)) continue;
+      const amt = parseFloat(line.discountedTotalSet.shopMoney.amount);
+      if (!Number.isFinite(amt)) continue;
+      currencyCode = line.discountedTotalSet.shopMoney.currencyCode || currencyCode;
+      totals.set(sku, (totals.get(sku) || 0) + amt);
+    }
+
+    for (const refund of order.refunds) {
+      for (const { node: rli } of refund.refundLineItems.edges) {
+        const li = rli.lineItem;
+        if (!li) continue;
+        const sku = lineItemSku(li);
+        if (!sku || !skuSet.has(sku)) continue;
+        const amt = parseFloat(rli.subtotalSet.shopMoney.amount);
+        if (!Number.isFinite(amt)) continue;
+        currencyCode = rli.subtotalSet.shopMoney.currencyCode || currencyCode;
+        totals.set(sku, (totals.get(sku) || 0) - amt);
+      }
+    }
+  }
+
+  return { totals, currencyCode };
+}
+
+async function fetchOrdersForNetSalesPeriod(searchQuery: string): Promise<{
+  orders: OrderNodeNetSales[];
+  /** True if more orders existed but were not fetched (hit page cap). */
+  hitPaginationCap: boolean;
+}> {
+  const orders: OrderNodeNetSales[] = [];
+  let after: string | null | undefined;
+
+  for (let page = 0; page < ORDER_NET_SALES_MAX_PAGES; page++) {
+    const variables: Record<string, unknown> = {
+      first: ORDER_NET_SALES_PAGE_SIZE,
+      query: searchQuery,
+    };
+    if (after) variables.after = after;
+
+    const data = await shopifyFetch<{
+      orders: {
+        pageInfo: { hasNextPage: boolean; endCursor: string | null };
+        edges: { node: OrderNodeNetSales }[];
+      };
+    }>(
+      {
+        query: getOrdersLineItemsNetSalesQuery,
+        variables,
+      },
+      { cache: 'no-store', tags: ['order-net-sales'] }
+    );
+
+    for (const edge of data.orders.edges) {
+      orders.push(edge.node);
+    }
+
+    if (!data.orders.pageInfo.hasNextPage || !data.orders.pageInfo.endCursor) {
+      return { orders, hitPaginationCap: false };
+    }
+    after = data.orders.pageInfo.endCursor;
+  }
+
+  return { orders, hitPaginationCap: true };
+}
+
+export type SkuNetSalesSplit = {
+  currencyCode: string;
+  /** Net sales (line discounted totals minus refund line subtotals) per SKU, orders with processed_at before cutoff. */
+  beforeCutoff: Record<string, number>;
+  /** Same, for orders with processed_at on or after cutoff. */
+  afterCutoff: Record<string, number>;
+  /** Sum of beforeCutoff across the requested SKUs. */
+  totalBefore: number;
+  /** Sum of afterCutoff across the requested SKUs. */
+  totalAfter: number;
+  /** Orders loaded for the “before” bucket (used for net sales). */
+  ordersLoadedBefore: number;
+  /** Orders loaded for the “after” bucket. */
+  ordersLoadedAfter: number;
+  /** More orders existed before cutoff but were skipped (pagination cap). */
+  paginationLimitedBefore: boolean;
+  /** More orders existed after cutoff but were skipped. */
+  paginationLimitedAfter: boolean;
+};
+
+/**
+ * Net sales by SKU from the Orders API: sums `discountedTotalSet` per matching line item,
+ * subtracts `refundLineItems.subtotalSet` on the same order, bucketed by order `processed_at`
+ * vs `cutoffDate` (Shopify search uses store timezone for `processed_at`).
+ */
+export async function getSkuNetSalesBeforeAndAfterProcessedAt(
+  skus: string[],
+  cutoffDate: string = LEGACY_PRODUCT_CREATED_BEFORE
+): Promise<SkuNetSalesSplit> {
+  const unique = [...new Set(skus.map((s) => s.trim()).filter(Boolean))];
+  const skuSet = new Set(unique);
+
+  if (skuSet.size === 0) {
+    return {
+      currencyCode: 'USD',
+      beforeCutoff: {},
+      afterCutoff: {},
+      totalBefore: 0,
+      totalAfter: 0,
+      ordersLoadedBefore: 0,
+      ordersLoadedAfter: 0,
+      paginationLimitedBefore: false,
+      paginationLimitedAfter: false,
+    };
+  }
+
+  const beforeQuery = `processed_at:<${cutoffDate}`;
+  const afterQuery = `processed_at:>=${cutoffDate}`;
+
+  const [beforeFetch, afterFetch] = await Promise.all([
+    fetchOrdersForNetSalesPeriod(beforeQuery),
+    fetchOrdersForNetSalesPeriod(afterQuery),
+  ]);
+
+  const beforeOrders = beforeFetch.orders;
+  const afterOrders = afterFetch.orders;
+
+  const beforeAgg = aggregateNetSalesBySku(beforeOrders, skuSet);
+  const afterAgg = aggregateNetSalesBySku(afterOrders, skuSet);
+
+  const currencyCode =
+    beforeAgg.currencyCode !== 'USD'
+      ? beforeAgg.currencyCode
+      : afterAgg.currencyCode;
+
+  const beforeCutoff: Record<string, number> = {};
+  const afterCutoff: Record<string, number> = {};
+  let totalBefore = 0;
+  let totalAfter = 0;
+
+  for (const sku of unique) {
+    const b = beforeAgg.totals.get(sku) ?? 0;
+    const a = afterAgg.totals.get(sku) ?? 0;
+    beforeCutoff[sku] = b;
+    afterCutoff[sku] = a;
+    totalBefore += b;
+    totalAfter += a;
+  }
+
+  return {
+    currencyCode,
+    beforeCutoff,
+    afterCutoff,
+    totalBefore,
+    totalAfter,
+    ordersLoadedBefore: beforeOrders.length,
+    ordersLoadedAfter: afterOrders.length,
+    paginationLimitedBefore: beforeFetch.hitPaginationCap,
+    paginationLimitedAfter: afterFetch.hitPaginationCap,
+  };
+}
+
 /**
  * Fetches LIVE inventory data from the Shopify Admin API.
  * This function now separates concerns: fetches inventory, then fetches products to map names.
@@ -413,8 +724,8 @@ export type ShopifyCustomer = {
   lastName: string | null;
   email: string | null;
   phone: string | null;
-  numberOfOrders: string;
-  totalSpentV2: {
+  numberOfOrders: string | number;
+  amountSpent: {
     amount: string;
     currencyCode: string;
   };
@@ -447,16 +758,21 @@ export async function getCustomers(): Promise<Customer[]> {
     tags: ['customers'],
   });
 
-  return res.customers.edges.map(({ node }) => ({
-    id: node.id,
-    name: [node.firstName, node.lastName].filter(Boolean).join(' ') || 'Unnamed Customer',
-    email: node.email || 'No email',
-    phone: node.phone || 'No phone',
-    location: [node.defaultAddress?.city, node.defaultAddress?.province, node.defaultAddress?.country].filter(Boolean).join(', ') || 'No address',
-    orderCount: parseInt(node.numberOfOrders, 10),
-    totalSpent: parseFloat(node.totalSpentV2.amount),
-    currency: node.totalSpentV2.currencyCode,
-  }));
+  return res.customers.edges.map(({ node }) => {
+    const spent = parseFloat(node.amountSpent.amount);
+    return {
+      id: node.id,
+      name: [node.firstName, node.lastName].filter(Boolean).join(' ') || 'Unnamed Customer',
+      email: node.email || 'No email',
+      phone: node.phone || 'No phone',
+      location: [node.defaultAddress?.city, node.defaultAddress?.province, node.defaultAddress?.country]
+        .filter(Boolean)
+        .join(', ') || 'No address',
+      orderCount: Number(node.numberOfOrders) || 0,
+      totalSpent: Number.isFinite(spent) ? spent : 0,
+      currency: node.amountSpent.currencyCode || 'USD',
+    };
+  });
 }
 // #endregion
 

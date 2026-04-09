@@ -41,6 +41,7 @@ body {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    --color-background-tertiary: hsl(0 0% 96%);
   }
   .dark {
     --background: 290 8% 10%;
@@ -75,6 +76,7 @@ body {
     --sidebar-accent-foreground: 281 40% 90%;
     --sidebar-border: 290 8% 15%;
     --sidebar-ring: 240 100% 75%;
+    --color-background-tertiary: hsl(290 10% 7%);
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import {
   Sidebar,
@@ -37,7 +38,9 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <PageLoader />
+        <Suspense fallback={null}>
+          <PageLoader />
+        </Suspense>
         <FirebaseClientProvider>
           <SidebarProvider>
             <Sidebar>

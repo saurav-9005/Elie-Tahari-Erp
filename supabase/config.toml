@@ -1,0 +1,10 @@
+# Minimal config for Edge Functions (extend with `supabase init` as needed)
+
+[functions.shopify-webhook]
+verify_jwt = false
+
+[functions.process-events]
+verify_jwt = false
+
+[functions.invite-user]
+verify_jwt = false

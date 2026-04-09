@@ -1,0 +1,17 @@
+{
+  "orders": {
+    "lastPageInfo": null,
+    "imported": 0
+  },
+  "customers": {
+    "lastPageInfo": null,
+    "imported": 0
+  },
+  "inventory": {
+    "lastPageInfo": null,
+    "imported": 5942
+  },
+  "completedSteps": [
+    "inventory"
+  ]
+}

@@ -1,5 +1,3 @@
-'use server';
-
 import {
   Card,
   CardContent,
@@ -14,6 +12,15 @@ import {
   } from '@/components/ui/table';
 import { getCustomers } from '@/lib/inventory-data';
 import ShopifyApiError from '@/components/shopify-api-error';
+
+function formatCustomerCurrency(amount: number, currencyCode: string) {
+  const code = /^[A-Z]{3}$/i.test(currencyCode) ? currencyCode.toUpperCase() : 'USD';
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${code}`;
+  }
+}
 
 export default async function CustomersPage() {
     try {
@@ -51,7 +58,7 @@ export default async function CustomersPage() {
                                         <TableCell>{customer.location}</TableCell>
                                         <TableCell className="text-right">{customer.orderCount}</TableCell>
                                         <TableCell className="text-right">
-                                            {new Intl.NumberFormat('en-US', { style: 'currency', currency: customer.currency }).format(customer.totalSpent)}
+                                            {formatCustomerCurrency(customer.totalSpent, customer.currency)}
                                         </TableCell>
                                     </TableRow>
                                 ))}

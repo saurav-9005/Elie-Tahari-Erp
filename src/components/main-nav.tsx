@@ -26,6 +26,9 @@ import {
   Users,
   ReceiptText,
   UsersRound,
+  Boxes,
+  Database,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -51,6 +54,16 @@ const inventorySubItems = [
 
 const analyticsSubItems = [
     { href: '/analytics/audience', label: 'Audience', icon: UsersRound },
+    { href: '/analytics/inventory', label: 'Inventory', icon: Boxes },
+]
+
+const erpSubItems = [
+    { href: '/erp/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/erp/orders', label: 'Orders', icon: ReceiptText },
+    { href: '/erp/inventory', label: 'Inventory', icon: Package },
+    { href: '/erp/customers', label: 'Customers', icon: Users },
+    { href: '/erp/settings/users', label: 'Users', icon: Settings },
+    { href: '/erp/settings/logs', label: 'Sync logs', icon: ClipboardList },
 ]
 
 export function MainNav() {
@@ -59,6 +72,8 @@ export function MainNav() {
   const [isInventoryOpen, setIsInventoryOpen] = useState(isInventoryActive);
   const isAnalyticsActive = pathname.startsWith('/analytics');
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(isAnalyticsActive);
+  const isErpActive = pathname.startsWith('/erp');
+  const [isErpOpen, setIsErpOpen] = useState(isErpActive);
 
   return (
     <SidebarMenu>
@@ -78,7 +93,7 @@ export function MainNav() {
         </SidebarMenuItem>
       ))}
 
-        <SidebarMenuItem asChild>
+        <SidebarMenuItem>
             <Collapsible open={isInventoryOpen} onOpenChange={setIsInventoryOpen} className="w-full">
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton
@@ -109,7 +124,7 @@ export function MainNav() {
                 </CollapsibleContent>
             </Collapsible>
         </SidebarMenuItem>
-        <SidebarMenuItem asChild>
+        <SidebarMenuItem>
             <Collapsible open={isAnalyticsOpen} onOpenChange={setIsAnalyticsOpen} className="w-full">
                 <CollapsibleTrigger asChild>
                     <SidebarMenuButton
@@ -127,6 +142,37 @@ export function MainNav() {
                 <CollapsibleContent className="py-1 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                     <ul className="grid gap-1 px-2">
                         {analyticsSubItems.map(({ href, label, icon: Icon }) => (
+                            <li key={href}>
+                                <SidebarMenuButton asChild isActive={pathname.startsWith(href)} size="sm" variant="ghost">
+                                    <Link href={href} >
+                                        <Icon />
+                                        <span>{label}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </li>
+                        ))}
+                    </ul>
+                </CollapsibleContent>
+            </Collapsible>
+        </SidebarMenuItem>
+        <SidebarMenuItem>
+            <Collapsible open={isErpOpen} onOpenChange={setIsErpOpen} className="w-full">
+                <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                        isActive={isErpActive}
+                        className="w-full justify-between"
+                        variant="default"
+                    >
+                        <div className="flex items-center gap-2">
+                            <Database />
+                            <span>Supabase ERP</span>
+                        </div>
+                        <ChevronDown className={cn("transition-transform h-4 w-4", isErpOpen && "rotate-180")} />
+                    </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-1 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+                    <ul className="grid gap-1 px-2">
+                        {erpSubItems.map(({ href, label, icon: Icon }) => (
                             <li key={href}>
                                 <SidebarMenuButton asChild isActive={pathname.startsWith(href)} size="sm" variant="ghost">
                                     <Link href={href} >

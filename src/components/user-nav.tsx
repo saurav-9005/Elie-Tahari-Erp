@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useUser, useAuth } from '@/firebase';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,15 @@ import Link from 'next/link';
 import { Skeleton } from './ui/skeleton';
 
 export function UserNav() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+
+  if (!mounted) {
+    return <Skeleton className="h-9 w-9 rounded-full" />;
+  }
 
   const handleLogout = async () => {
     if (auth) {

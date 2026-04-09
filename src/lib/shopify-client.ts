@@ -122,6 +122,62 @@ export const getOrdersQuery = /* GraphQL */ `
   }
 `;
 
+/** Orders with line items + refund lines for per-SKU net sales (discounted line totals minus refunds). */
+export const getOrdersLineItemsNetSalesQuery = /* GraphQL */ `
+  query getOrdersLineItemsNetSales($first: Int!, $query: String!, $after: String) {
+    orders(first: $first, after: $after, query: $query, sortKey: PROCESSED_AT, reverse: true) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      edges {
+        node {
+          id
+          name
+          processedAt
+          lineItems(first: 250) {
+            edges {
+              node {
+                sku
+                quantity
+                variant {
+                  sku
+                }
+                discountedTotalSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
+          refunds {
+            refundLineItems(first: 100) {
+              edges {
+                node {
+                  subtotalSet {
+                    shopMoney {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  lineItem {
+                    sku
+                    variant {
+                      sku
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const getCustomersQuery = /* GraphQL */ `
   query getCustomers($first: Int!) {
     customers(first: $first, sortKey: UPDATED_AT, reverse: true) {
@@ -133,7 +189,7 @@ export const getCustomersQuery = /* GraphQL */ `
           email
           phone
           numberOfOrders
-          totalSpentV2 {
+          amountSpent {
             amount
             currencyCode
           }
@@ -156,6 +212,38 @@ export const getProductsQuery = /* GraphQL */ `
           id
           handle
           title
+          tags
+          featuredImage {
+            url
+            altText
+          }
+          variants(first: 1) {
+            edges {
+              node {
+                id
+                sku
+                price
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+/** Products matching a search query, sorted by createdAt ascending (oldest first). */
+export const getProductsByCreatedDateQuery = /* GraphQL */ `
+  query getProductsByCreatedDate($first: Int!, $query: String!) {
+    products(first: $first, query: $query, sortKey: CREATED_AT, reverse: false) {
+      edges {
+        node {
+          id
+          createdAt
+          handle
+          title
+          vendor
+          productType
           tags
           featuredImage {
             url
