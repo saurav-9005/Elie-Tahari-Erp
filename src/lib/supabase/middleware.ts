@@ -29,7 +29,42 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const pathname = request.nextUrl.pathname;
+
+  if (pathname === '/') {
+    const dest = user ? '/erp/dashboard' : '/erp/login';
+    const redirectUrl = new URL(dest, request.url);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      redirectResponse.cookies.set(c.name, c.value);
+    });
+    return redirectResponse;
+  }
+
+  if (pathname === '/erp/login' && user) {
+    const redirectUrl = new URL('/erp/dashboard', request.url);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      redirectResponse.cookies.set(c.name, c.value);
+    });
+    return redirectResponse;
+  }
+
+  const isErpProtected =
+    pathname.startsWith('/erp') && pathname !== '/erp/login';
+
+  if (isErpProtected && !user) {
+    const loginUrl = new URL('/erp/login', request.url);
+    const redirectResponse = NextResponse.redirect(loginUrl);
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      redirectResponse.cookies.set(c.name, c.value);
+    });
+    return redirectResponse;
+  }
 
   return supabaseResponse;
 }

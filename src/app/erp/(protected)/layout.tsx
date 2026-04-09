@@ -1,10 +1,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getServerSession, hasRole } from '@/lib/supabase/session';
+import { getServerSession } from '@/lib/supabase/session';
 import { ErpSignOutButton } from '@/components/erp/erp-sign-out-button';
-
-const navLinkClass =
-  'block rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground';
+import { ErpSidebarNav } from '@/components/erp/erp-sidebar-nav';
+import { Logo } from '@/components/logo';
 
 export default async function ErpProtectedLayout({
   children,
@@ -42,14 +41,11 @@ export default async function ErpProtectedLayout({
     );
   }
 
-  const isAdmin = hasRole(session, ['admin']);
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Supabase ERP</span> · Role{' '}
-          <span className="font-medium text-foreground">{session.profile.role}</span> ·{' '}
+          Role <span className="font-medium text-foreground">{session.profile.role}</span> ·{' '}
           {session.profile.email}
         </div>
         <ErpSignOutButton />
@@ -57,88 +53,12 @@ export default async function ErpProtectedLayout({
 
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
         <aside className="shrink-0 lg:w-56">
-          <nav className="space-y-6" aria-label="ERP">
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Operations
-              </p>
-              <ul className="flex flex-col gap-0.5">
-                <li>
-                  <Link href="/erp/dashboard" className={navLinkClass}>
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/erp/orders" className={navLinkClass}>
-                    Orders
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/erp/inventory" className={navLinkClass}>
-                    Inventory
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/erp/customers" className={navLinkClass}>
-                    Customers
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {isAdmin && (
-              <div>
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Supabase ERP
-                </p>
-                <ul className="flex flex-col gap-0.5">
-                  <li>
-                    <Link href="/erp/ceo" className={navLinkClass}>
-                      Control Tower
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/erp/reports/inventory" className={navLinkClass}>
-                      Inventory Report
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/erp/sales" className={navLinkClass}>
-                      Sales &amp; Growth
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/erp/design" className={navLinkClass}>
-                      Design &amp; Production
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/erp/finance" className={navLinkClass}>
-                      Finance
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            )}
-
-            <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Settings
-              </p>
-              <ul className="flex flex-col gap-0.5">
-                <li>
-                  <Link href="/erp/settings/users" className={navLinkClass}>
-                    Users
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/erp/settings/logs" className={navLinkClass}>
-                    Logs
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </nav>
+          <div className="mb-6">
+            <Link href="/erp/dashboard" className="inline-block">
+              <Logo className="max-h-10 w-auto" />
+            </Link>
+          </div>
+          <ErpSidebarNav />
         </aside>
 
         <div className="min-w-0 flex-1">{children}</div>
