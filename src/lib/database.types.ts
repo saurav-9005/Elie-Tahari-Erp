@@ -66,6 +66,7 @@ export type Database = {
         Row: {
           id: string;
           shopify_order_id: string;
+          order_name: string | null;
           customer_email: string | null;
           customer_name: string | null;
           total_price: number | null;
@@ -80,6 +81,7 @@ export type Database = {
         Insert: {
           id?: string;
           shopify_order_id: string;
+          order_name?: string | null;
           customer_email?: string | null;
           customer_name?: string | null;
           total_price?: number | null;
@@ -258,6 +260,36 @@ export type Database = {
           created_at?: string;
         };
         Update: Partial<Database['public']['Tables']['ceo_alerts']['Insert']>;
+        Relationships: [];
+      };
+      refunds: {
+        Row: {
+          id: string;
+          shopify_refund_id: string;
+          shopify_order_id: string;
+          created_at_shopify: string | null;
+          note: string | null;
+          refund_line_items: Json | null;
+          total_refunded: number | null;
+          subtotal: number | null;
+          total_tax: number | null;
+          shipping_refunded: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          shopify_refund_id: string;
+          shopify_order_id: string;
+          created_at_shopify?: string | null;
+          note?: string | null;
+          refund_line_items?: Json | null;
+          total_refunded?: number | null;
+          subtotal?: number | null;
+          total_tax?: number | null;
+          shipping_refunded?: number | null;
+          created_at?: string;
+        };
+        Update: Partial<Database['public']['Tables']['refunds']['Insert']>;
         Relationships: [];
       };
     };

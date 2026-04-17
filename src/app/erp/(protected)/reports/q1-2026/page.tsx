@@ -38,11 +38,19 @@ function parseRows(data: unknown): Q1ReportRow[] {
       product_variant_sku: String(o.product_variant_sku ?? ''),
       product_title: o.product_title == null ? null : String(o.product_title),
       order_name: o.order_name == null ? null : String(o.order_name).replace(/^#/, ''),
+      order_date:
+        o.order_date != null
+          ? String(o.order_date)
+          : o.created_at != null
+            ? String(o.created_at)
+            : null,
+      vendor: o.vendor == null || String(o.vendor).trim() === '' ? null : String(o.vendor).trim(),
       quantity: toNum(qty),
       gross_sales: toNum(o.gross_sales),
       net_sales: toNum(o.net_sales),
       discount: toNum(o.discount ?? o.total_discount),
       return_amount: toNum(o.return_amount),
+      row_type: o.row_type == null ? undefined : String(o.row_type),
     };
   });
 }
@@ -65,23 +73,32 @@ export default async function Q12026ReportPage() {
 
   const supabase = createServiceRoleClientWithStatementTimeout(30_000);
   const rpc = (supabase as any).rpc.bind(supabase as any);
-  const [{ data: rowsData }, { data: summaryData }, { data: countData }] = await Promise.all([
+  const [{ data: rowsData }, { data: summaryData }, { data: countData }, vendorRes] = await Promise.all([
     rpc('erp_q1_2026_report', { p_page: 1, p_page_size: PAGE_SIZE }),
     rpc('erp_q1_2026_summary'),
     rpc('erp_q1_2026_report_count'),
+    supabase.from('inventory').select('vendor').not('vendor', 'is', null).limit(2000),
   ]);
+
+  const vendorRows = vendorRes.error ? [] : (vendorRes.data ?? []);
+  const vendorOptions = Array.from(
+    new Set(
+      vendorRows.map((r) => (r.vendor ?? '').trim()).filter((v) => v.length > 0)
+    )
+  ).sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-headline text-2xl font-semibold tracking-tight">Q1 2026 Sales Report</h1>
-        <p className="text-sm text-muted-foreground">January 1 - March 31, 2026</p>
+        <p className="text-sm text-muted-foreground">January 1 – March 31, 2026 (Eastern Time)</p>
       </div>
       <Q12026ReportClient
         initialRows={parseRows(rowsData)}
         summary={parseSummary(summaryData)}
         initialTotalLineItems={toNum(countData)}
         pageSize={PAGE_SIZE}
+        vendorOptions={vendorOptions}
       />
     </div>
   );
