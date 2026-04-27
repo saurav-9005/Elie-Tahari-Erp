@@ -13,7 +13,9 @@
     "shopify-import": "ts-node -P tsconfig.scripts.json scripts/shopify-import.ts",
     "shopify-import-inventory": "ts-node -P tsconfig.scripts.json scripts/shopify-import.ts --only=inventory",
     "register-webhooks": "ts-node -P tsconfig.scripts.json scripts/register-webhooks.ts",
-    "delete-webhooks": "ts-node -P tsconfig.scripts.json scripts/delete-webhooks.ts"
+    "delete-webhooks": "ts-node -P tsconfig.scripts.json scripts/delete-webhooks.ts",
+    "shopify-import-refunds-full": "ts-node -P tsconfig.scripts.json scripts/shopify-import-refunds.ts",
+    "update-orders-meta": "ts-node -P tsconfig.scripts.json scripts/shopify-update-orders-meta.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",

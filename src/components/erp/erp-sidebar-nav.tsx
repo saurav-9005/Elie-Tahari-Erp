@@ -32,6 +32,7 @@ const items: { href: string; label: string; icon: React.ComponentType<{ classNam
     { href: '/erp/settings/users', label: 'Users', icon: Settings },
     { href: '/erp/settings/logs', label: 'Sync logs', icon: ClipboardList },
     { href: '/erp/reports/inventory', label: 'Inventory Report', icon: FileSpreadsheet },
+    { href: '/erp/reports/q1-2026', label: 'Q1 2026 Report', icon: FileSpreadsheet },
     { href: '/erp/ceo', label: 'Control Tower', icon: Gauge },
   ];
 
