@@ -73,6 +73,7 @@ export type Database = {
           currency: string;
           status: string;
           fulfillment_status: string | null;
+          source_name: string | null;
           line_items: Json | null;
           shipping_address: Json | null;
           created_at: string;
@@ -88,6 +89,7 @@ export type Database = {
           currency?: string;
           status?: string;
           fulfillment_status?: string | null;
+          source_name?: string | null;
           line_items?: Json | null;
           shipping_address?: Json | null;
           created_at?: string;
@@ -394,7 +396,31 @@ export type Database = {
         Returns: Json;
       };
       erp_shopify_inventory: {
-        Args: { p_page?: number };
+        Args: { p_page?: number; p_month?: string | null };
+        Returns: Json;
+      };
+      erp_shopify_inventory_summary: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_shopify_inventory_count: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_customer_ltv_by_channel: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_customer_ltv_by_first_product: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_customer_segments: {
+        Args: Record<string, never>;
+        Returns: Json;
+      };
+      erp_promotion_impact: {
+        Args: Record<string, never>;
         Returns: Json;
       };
     };

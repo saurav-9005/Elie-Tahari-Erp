@@ -8,6 +8,10 @@ import { PageLoader } from '@/components/page-loader';
 export const metadata: Metadata = {
   title: 'Elie Tahari ERP',
   description: 'Luxury Women Clothing ERP System',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({

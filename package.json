@@ -15,7 +15,9 @@
     "register-webhooks": "ts-node -P tsconfig.scripts.json scripts/register-webhooks.ts",
     "delete-webhooks": "ts-node -P tsconfig.scripts.json scripts/delete-webhooks.ts",
     "shopify-import-refunds-full": "ts-node -P tsconfig.scripts.json scripts/shopify-import-refunds.ts",
-    "update-orders-meta": "ts-node -P tsconfig.scripts.json scripts/shopify-update-orders-meta.ts"
+    "update-orders-meta": "ts-node -P tsconfig.scripts.json scripts/shopify-update-orders-meta.ts",
+    "garment-sync": "ts-node -P tsconfig.scripts.json scripts/sync-garment-delivery.ts",
+    "garment-sync-cron": "ts-node -P tsconfig.scripts.json scripts/garment-sync-cron.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",
@@ -42,14 +44,15 @@
     "@radix-ui/react-toast": "^1.2.6",
     "@radix-ui/react-tooltip": "^1.1.8",
     "@supabase/ssr": "^0.10.0",
-    "@supabase/supabase-js": "^2.101.1",
+    "@supabase/supabase-js": "^2.105.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^11.9.1",
     "genkit": "^1.28.0",
+    "googleapis": "^171.4.0",
     "lucide-react": "^0.475.0",
     "next": "14.2.35",
     "patch-package": "^8.0.0",
