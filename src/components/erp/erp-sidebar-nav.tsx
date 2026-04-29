@@ -42,6 +42,7 @@ const inventoryItems = [
   { href: '/erp/inventory/dashboard', label: 'Dashboard' },
   { href: '/erp/inventory/factory-po', label: 'Factory POs' },
   { href: '/erp/inventory/wms', label: 'WMS' },
+  { href: '/erp/inventory/reconciliation', label: 'Inventory Reconciliation' },
   { href: '/erp/inventory/shopify', label: 'Shopify' },
 ];
 

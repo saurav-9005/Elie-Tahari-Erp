@@ -212,21 +212,22 @@ function mapCustomer(c: ShopifyCustomer): Database['public']['Tables']['customer
   };
 }
 
-function mapProduct(p: ShopifyProduct): Database['public']['Tables']['inventory']['Insert'] {
+function mapProduct(p: ShopifyProduct): Database['public']['Tables']['inventory']['Insert'][] {
   const variants = p.variants ?? [];
-  const first = variants[0];
-  return {
-    shopify_product_id: String(p.id),
-    shopify_variant_id: first ? String(first.id) : null,
-    title: p.title || '(untitled)',
-    sku: first?.sku ?? null,
-    quantity: first?.inventory_quantity ?? 0,
-    product_created_at: p.created_at ?? null,
-    product_type: p.product_type ?? null,
-    vendor: p.vendor ?? null,
-    product_status: p.status ?? null,
-    last_synced_at: new Date().toISOString(),
-  };
+  return variants.map((v) => {
+    return {
+      shopify_variant_id: String(v.id),
+      shopify_product_id: String(p.id),
+      title: p.title || '(untitled)',
+      sku: v.sku ?? null,
+      quantity: v.inventory_quantity ?? 0,
+      last_synced_at: new Date().toISOString(),
+      product_created_at: p.created_at ?? null,
+      product_type: p.product_type ?? null,
+      vendor: p.vendor ?? null,
+      product_status: p.status ?? null,
+    };
+  });
 }
 
 const storeUrl = normalizeStoreUrl(requireEnv('SHOPIFY_STORE_URL'));
@@ -244,13 +245,16 @@ const supabase = createClient<Database>(supabaseUrl, serviceKey, {
 });
 
 async function upsertBatches<T extends Record<string, unknown>>(
-  table: 'orders' | 'customers' | 'inventory',
+  table: string,
   rows: T[],
   onConflict: string
 ): Promise<void> {
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
-    const { error } = await supabase.from(table).upsert(batch as never, { onConflict });
+    const db = supabase as unknown as {
+      from: (name: string) => { upsert: (payload: Record<string, unknown>[], options: { onConflict: string }) => Promise<{ error: { message: string } | null }> };
+    };
+    const { error } = await db.from(table).upsert(batch, { onConflict });
     if (error) throw new Error(`${table} upsert: ${error.message}`);
   }
 }
@@ -399,8 +403,8 @@ async function importInventory(
     }
     const body = (await res.json()) as { products?: ShopifyProduct[] };
     const items = body.products ?? [];
-    const rows = items.map(mapProduct) as Record<string, unknown>[];
-    await upsertBatches('inventory', rows, 'shopify_product_id');
+    const rows = items.flatMap(mapProduct);
+    await upsertBatches('inventory', rows, 'shopify_variant_id');
 
     imported += items.length;
     const nextUrl = parseNextPageUrl(res.headers.get('link'));

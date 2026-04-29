@@ -17,7 +17,8 @@
     "shopify-import-refunds-full": "ts-node -P tsconfig.scripts.json scripts/shopify-import-refunds.ts",
     "update-orders-meta": "ts-node -P tsconfig.scripts.json scripts/shopify-update-orders-meta.ts",
     "garment-sync": "ts-node -P tsconfig.scripts.json scripts/sync-garment-delivery.ts",
-    "garment-sync-cron": "ts-node -P tsconfig.scripts.json scripts/garment-sync-cron.ts"
+    "garment-sync-cron": "ts-node -P tsconfig.scripts.json scripts/garment-sync-cron.ts",
+    "ats-upload": "ts-node -P tsconfig.scripts.json scripts/upload-ats-inventory.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",
@@ -62,6 +63,7 @@
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   },
   "devDependencies": {
