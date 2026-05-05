@@ -3,6 +3,10 @@
     {
       "path": "/api/process-events",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/garment-sync",
+      "schedule": "0 6 * * *"
     }
   ]
 }
