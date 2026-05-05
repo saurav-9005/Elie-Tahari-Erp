@@ -11,7 +11,7 @@ const BLOCKS = [
 
 export default async function SalesGrowthPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin'])) {
+  if (!hasRole(session, ['super admin'])) {
     return <ErpForbidden />;
   }
 

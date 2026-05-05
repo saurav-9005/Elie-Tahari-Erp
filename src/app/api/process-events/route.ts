@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
   const session = await getServerSession();
-  let authorized = hasRole(session, ['admin']);
+  let authorized = hasRole(session, ['super admin']);
   if (!authorized && cronSecret && request.headers.get('x-cron-secret') === cronSecret) {
     authorized = true;
   }

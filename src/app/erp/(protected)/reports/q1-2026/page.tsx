@@ -69,7 +69,7 @@ function parseSummary(data: unknown): Q1Summary {
 
 export default async function Q12026ReportPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin'])) return <ErpForbidden />;
+  if (!hasRole(session, ['super admin'])) return <ErpForbidden />;
 
   const supabase = createServiceRoleClientWithStatementTimeout(30_000);
   const rpc = (supabase as any).rpc.bind(supabase as any);

@@ -2,12 +2,17 @@ import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { ThemeProvider } from '@/components/theme-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { PageLoader } from '@/components/page-loader';
 
 export const metadata: Metadata = {
   title: 'Elie Tahari ERP',
   description: 'Luxury Women Clothing ERP System',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -16,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
@@ -26,13 +31,15 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <Suspense fallback={null}>
-          <PageLoader />
-        </Suspense>
-        <FirebaseClientProvider>
-          <div className="min-h-screen bg-background">{children}</div>
-          <Toaster />
-        </FirebaseClientProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <Suspense fallback={null}>
+            <PageLoader />
+          </Suspense>
+          <FirebaseClientProvider>
+            <div className="min-h-screen bg-background">{children}</div>
+            <Toaster />
+          </FirebaseClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

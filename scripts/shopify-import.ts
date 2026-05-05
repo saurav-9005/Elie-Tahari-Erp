@@ -64,7 +64,12 @@ async function saveProgress(state: ProgressState): Promise<void> {
 
 type ShopifyOrder = {
   id: number;
+  order_number?: string | number;
+  name?: string;
   email?: string | null;
+  source_name?: string | null;
+  location_id?: number | string | null;
+  location_name?: string | null;
   customer?: {
     id: number;
     email?: string | null;
@@ -110,6 +115,14 @@ type ShopifyProduct = {
   vendor?: string | null;
   status?: string | null;
   variants: ShopifyVariant[];
+};
+
+type OrderInsertRow = Database['public']['Tables']['orders']['Insert'] & {
+  location_id?: string | null;
+  location_name?: string | null;
+  order_name?: string | null;
+  source_name?: string | null;
+  fulfillment_status?: string | null;
 };
 
 function requireEnv(name: string): string {
@@ -164,19 +177,23 @@ async function fetchWithRetry(
 
 /** Fetch until not rate-limited; network errors handled inside fetchWithRetry. */
 async function fetchShopifyPage(url: string, headers: HeadersInit): Promise<Response> {
-  for (;;) {
+  const retryStatuses = new Set([429, 502, 503]);
+  for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetchWithRetry(url, { headers });
-    if (res.status === 429) {
-      const retryAfter = res.headers.get('Retry-After') || '2';
-      console.log(`Rate limited. Waiting ${retryAfter}s...`);
-      await delay(parseInt(retryAfter, 10) * 1000);
-      continue;
+    if (!retryStatuses.has(res.status)) {
+      return res;
     }
-    return res;
+    if (attempt === 3) {
+      return res;
+    }
+    const waitMs = res.status === 429 ? 10000 : 5000;
+    const waitLabel = res.status === 429 ? '10s' : '5s';
+    console.log(`Shopify ${res.status} - retrying in ${waitLabel} (attempt ${attempt}/3)`);
+    await delay(waitMs);
   }
 }
 
-function mapOrder(o: ShopifyOrder): Database['public']['Tables']['orders']['Insert'] {
+function mapOrder(o: ShopifyOrder): OrderInsertRow {
   const fromCustomer = o.customer
     ? [o.customer.first_name, o.customer.last_name].filter(Boolean).join(' ').trim()
     : '';
@@ -187,10 +204,15 @@ function mapOrder(o: ShopifyOrder): Database['public']['Tables']['orders']['Inse
 
   return {
     shopify_order_id: String(o.id),
+    order_name: o.name ?? null,
     customer_email: o.email ?? o.customer?.email ?? null,
     customer_name: customerName,
     total_price: o.total_price != null ? parseFloat(String(o.total_price)) : null,
     currency: o.currency ?? 'USD',
+    source_name: o.source_name ?? null,
+    location_id: o.location_id ? String(o.location_id) : null,
+    location_name: o.location_name ?? null,
+    fulfillment_status: o.fulfillment_status ?? null,
     status: o.fulfillment_status ?? o.financial_status ?? 'pending',
     line_items: (o.line_items ?? null) as Json,
     shipping_address: (o.shipping_address ?? null) as Json,
@@ -212,21 +234,22 @@ function mapCustomer(c: ShopifyCustomer): Database['public']['Tables']['customer
   };
 }
 
-function mapProduct(p: ShopifyProduct): Database['public']['Tables']['inventory']['Insert'] {
+function mapProduct(p: ShopifyProduct): Database['public']['Tables']['inventory']['Insert'][] {
   const variants = p.variants ?? [];
-  const first = variants[0];
-  return {
-    shopify_product_id: String(p.id),
-    shopify_variant_id: first ? String(first.id) : null,
-    title: p.title || '(untitled)',
-    sku: first?.sku ?? null,
-    quantity: first?.inventory_quantity ?? 0,
-    product_created_at: p.created_at ?? null,
-    product_type: p.product_type ?? null,
-    vendor: p.vendor ?? null,
-    product_status: p.status ?? null,
-    last_synced_at: new Date().toISOString(),
-  };
+  return variants.map((v) => {
+    return {
+      shopify_variant_id: String(v.id),
+      shopify_product_id: String(p.id),
+      title: p.title || '(untitled)',
+      sku: v.sku ?? null,
+      quantity: v.inventory_quantity ?? 0,
+      last_synced_at: new Date().toISOString(),
+      product_created_at: p.created_at ?? null,
+      product_type: p.product_type ?? null,
+      vendor: p.vendor ?? null,
+      product_status: p.status ?? null,
+    };
+  });
 }
 
 const storeUrl = normalizeStoreUrl(requireEnv('SHOPIFY_STORE_URL'));
@@ -244,13 +267,16 @@ const supabase = createClient<Database>(supabaseUrl, serviceKey, {
 });
 
 async function upsertBatches<T extends Record<string, unknown>>(
-  table: 'orders' | 'customers' | 'inventory',
+  table: string,
   rows: T[],
   onConflict: string
 ): Promise<void> {
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
-    const { error } = await supabase.from(table).upsert(batch as never, { onConflict });
+    const db = supabase as unknown as {
+      from: (name: string) => { upsert: (payload: Record<string, unknown>[], options: { onConflict: string }) => Promise<{ error: { message: string } | null }> };
+    };
+    const { error } = await db.from(table).upsert(batch, { onConflict });
     if (error) throw new Error(`${table} upsert: ${error.message}`);
   }
 }
@@ -267,7 +293,8 @@ async function importOrders(progress: ProgressState): Promise<number> {
     return progress.orders.imported;
   }
 
-  const firstUrl = `${base}/orders.json?limit=250&status=any`;
+  const createdAtMin = sinceArg ? `&created_at_min=${encodeURIComponent(sinceArg)}` : '';
+  const firstUrl = `${base}/orders.json?limit=250&status=any${createdAtMin}`;
   let url: string | null = progress.orders.lastPageInfo ?? firstUrl;
   const seenUrls = new Set<string>();
   let imported = progress.orders.imported;
@@ -399,8 +426,8 @@ async function importInventory(
     }
     const body = (await res.json()) as { products?: ShopifyProduct[] };
     const items = body.products ?? [];
-    const rows = items.map(mapProduct) as Record<string, unknown>[];
-    await upsertBatches('inventory', rows, 'shopify_product_id');
+    const rows = items.flatMap(mapProduct);
+    await upsertBatches('inventory', rows, 'shopify_variant_id');
 
     imported += items.length;
     const nextUrl = parseNextPageUrl(res.headers.get('link'));
@@ -430,6 +457,15 @@ async function importInventory(
 const onlyInventory =
   process.env.IMPORT_ONLY?.trim().toLowerCase() === 'inventory' ||
   process.argv.includes('--only=inventory');
+
+function getSinceArg(): string | null {
+  const arg = process.argv.find((v) => v.startsWith('--since='));
+  if (!arg) return null;
+  const value = arg.slice('--since='.length).trim();
+  return value || null;
+}
+
+const sinceArg = getSinceArg();
 
 async function main(): Promise<void> {
   let progress = await loadProgress();

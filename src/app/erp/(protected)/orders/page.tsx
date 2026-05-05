@@ -18,7 +18,7 @@ export default async function ErpOrdersPage({
   searchParams: { q?: string; status?: string };
 }) {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin', 'finance'])) {
+  if (!hasRole(session, ['super admin', 'admin', 'finance'])) {
     return <ErpForbidden />;
   }
 

@@ -1,7 +1,7 @@
 {
   "orders": {
-    "lastPageInfo": null,
-    "imported": 0
+    "lastPageInfo": "https://elie-tahari.myshopify.com/admin/api/2024-01/orders.json?limit=250&page_info=eyJkaXJlY3Rpb24iOiJuZXh0Iiwic3RhdHVzIjoiYW55IiwibGFzdF9pZCI6MzY5NTI4NjkxMTExMywibGFzdF92YWx1ZSI6IjIwMjEtMDUtMDEgMjA6MTc6MjguMjc3OTU3In0",
+    "imported": 351250
   },
   "customers": {
     "lastPageInfo": null,
@@ -9,7 +9,7 @@
   },
   "inventory": {
     "lastPageInfo": null,
-    "imported": 5942
+    "imported": 17826
   },
   "completedSteps": [
     "inventory"

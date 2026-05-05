@@ -82,7 +82,7 @@ function ReportFallback() {
 
 export default async function InventoryReportPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin'])) {
+  if (!hasRole(session, ['super admin'])) {
     return <ErpForbidden />;
   }
 

@@ -18,7 +18,7 @@ function summaryTotalSkus(data: unknown): number | null {
 
 export async function GET(request: Request) {
   const session = await getServerSession();
-  if (!session?.profile || !hasRole(session, ['admin'])) {
+  if (!session?.profile || !hasRole(session, ['super admin'])) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
