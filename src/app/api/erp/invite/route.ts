@@ -1,19 +1,18 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { getServerSession, hasRole } from '@/lib/supabase/session';
-import type { AppRole } from '@/lib/database.types';
 
 export const runtime = 'nodejs';
 
-const ROLES: AppRole[] = ['admin', 'finance', 'warehouse', 'viewer'];
+const ROLES = ['super admin', 'admin'] as const;
 
 export async function POST(request: Request) {
   const session = await getServerSession();
-  if (!session?.profile || !hasRole(session, ['admin'])) {
+  if (!session?.profile || !hasRole(session, ['super admin'])) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  let body: { email?: string; role?: AppRole };
+  let body: { email?: string; role?: string };
   try {
     body = await request.json();
   } catch {
@@ -22,7 +21,7 @@ export async function POST(request: Request) {
 
   const email = body.email?.trim().toLowerCase();
   const role = body.role;
-  if (!email || !role || !ROLES.includes(role)) {
+  if (!email || !role || !(ROLES as readonly string[]).includes(role)) {
     return NextResponse.json({ error: 'email and valid role required' }, { status: 400 });
   }
 

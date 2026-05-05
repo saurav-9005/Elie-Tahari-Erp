@@ -27,7 +27,7 @@ function PageSkeleton() {
 
 export default async function WmsPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin', 'warehouse'])) {
+  if (!hasRole(session, ['super admin', 'admin', 'warehouse'])) {
     return <ErpForbidden />;
   }
 

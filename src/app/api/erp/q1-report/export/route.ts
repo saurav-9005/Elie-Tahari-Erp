@@ -75,7 +75,7 @@ function parseQ1SummaryPayload(data: unknown): Record<string, unknown> {
 
 export async function GET(request: Request) {
   const session = await getServerSession();
-  if (!session?.profile || !hasRole(session, ['admin'])) {
+  if (!session?.profile || !hasRole(session, ['super admin'])) {
     return new Response('Forbidden', { status: 403 });
   }
 

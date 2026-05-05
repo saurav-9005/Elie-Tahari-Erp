@@ -1,9 +1,6 @@
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/supabase/session';
-import { ErpSignOutButton } from '@/components/erp/erp-sign-out-button';
-import { ErpSidebarNav } from '@/components/erp/erp-sidebar-nav';
-import { Logo } from '@/components/logo';
+import { ErpProtectedShell } from '@/components/erp/erp-protected-shell';
 
 export default async function ErpProtectedLayout({
   children,
@@ -42,27 +39,8 @@ export default async function ErpProtectedLayout({
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      <div className="flex flex-col gap-3 border-b pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
-          Role <span className="font-medium text-foreground">{session.profile.role}</span> ·{' '}
-          {session.profile.email}
-        </div>
-        <ErpSignOutButton />
-      </div>
-
-      <div className="flex flex-col gap-8 lg:flex-row lg:gap-10">
-        <aside className="shrink-0 lg:w-56">
-          <div className="mb-6">
-            <Link href="/erp/dashboard" className="inline-block">
-              <Logo className="max-h-10 w-auto" />
-            </Link>
-          </div>
-          <ErpSidebarNav />
-        </aside>
-
-        <div className="min-w-0 flex-1">{children}</div>
-      </div>
-    </div>
+    <ErpProtectedShell userRole={session.profile.role} userEmail={session.profile.email}>
+      {children}
+    </ErpProtectedShell>
   );
 }

@@ -27,16 +27,16 @@ function PageSkeleton() {
 
 export default async function ShopifyInventoryPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin', 'warehouse'])) {
+  if (!hasRole(session, ['super admin', 'admin', 'warehouse'])) {
     return <ErpForbidden />;
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-headline text-2xl font-semibold tracking-tight">Shopify Inventory</h1>
+        <h1 className="font-headline text-2xl font-semibold tracking-tight">Stock Analytics</h1>
         <p className="text-sm text-muted-foreground">
-          Current stock, sold and returned by style — 2026 data
+          Stock levels, sales and returns by style — 2026
         </p>
       </div>
 

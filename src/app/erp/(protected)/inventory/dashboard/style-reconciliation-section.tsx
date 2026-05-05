@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClient } from '@/lib/supabase/client';
 
@@ -77,7 +78,14 @@ export function StyleReconciliationSection() {
           };
         });
 
-        merged.sort((a, b) => b.difference - a.difference);
+        merged.sort((a, b) => {
+          const absDiffA = Math.abs(a.difference);
+          const absDiffB = Math.abs(b.difference);
+          if (absDiffA === 0 && absDiffB === 0) return 0;
+          if (absDiffA === 0) return 1;
+          if (absDiffB === 0) return -1;
+          return absDiffB - absDiffA;
+        });
         setRows(merged);
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load');
@@ -105,12 +113,6 @@ export function StyleReconciliationSection() {
       ) : null}
 
       <div className="relative rounded-lg border border-border" style={{ overflowY: 'auto', overflowX: 'auto', height: '400px', width: '100%' }}>
-        {loading ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/30">
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          </div>
-        ) : null}
-
         <Table style={{ minWidth: '600px', borderCollapse: 'collapse', width: '100%' }}>
           <TableHeader>
             <TableRow>
@@ -127,7 +129,17 @@ export function StyleReconciliationSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {renderedRows.length === 0 ? (
+            {loading ? (
+              Array.from({ length: 8 }).map((_, rowIdx) => (
+                <TableRow key={`style-recon-row-skel-${rowIdx}`}>
+                  {Array.from({ length: 4 }).map((__, cellIdx) => (
+                    <TableCell key={`style-recon-cell-skel-${rowIdx}-${cellIdx}`}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : renderedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                   No rows found.

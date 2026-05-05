@@ -12,14 +12,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import type { AppRole } from '@/lib/database.types';
 
-const ROLES: AppRole[] = ['admin', 'finance', 'warehouse', 'viewer'];
+const ROLES = ['super admin', 'admin'] as const;
+type InviteRole = (typeof ROLES)[number];
 
 export function ErpInviteForm() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState<AppRole>('viewer');
+  const [role, setRole] = useState<InviteRole>('admin');
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
@@ -68,7 +68,7 @@ export function ErpInviteForm() {
       </div>
       <div className="space-y-2">
         <Label>Role</Label>
-        <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
+        <Select value={role} onValueChange={(v) => setRole(v as InviteRole)}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>

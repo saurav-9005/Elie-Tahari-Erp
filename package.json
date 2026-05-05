@@ -11,6 +11,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "shopify-import": "ts-node -P tsconfig.scripts.json scripts/shopify-import.ts",
+    "shopify-import-2026": "ts-node -P tsconfig.scripts.json scripts/shopify-import.ts --since=2026-01-01",
     "shopify-import-inventory": "ts-node -P tsconfig.scripts.json scripts/shopify-import.ts --only=inventory",
     "register-webhooks": "ts-node -P tsconfig.scripts.json scripts/register-webhooks.ts",
     "delete-webhooks": "ts-node -P tsconfig.scripts.json scripts/delete-webhooks.ts",
@@ -18,7 +19,8 @@
     "update-orders-meta": "ts-node -P tsconfig.scripts.json scripts/shopify-update-orders-meta.ts",
     "garment-sync": "ts-node -P tsconfig.scripts.json scripts/sync-garment-delivery.ts",
     "garment-sync-cron": "ts-node -P tsconfig.scripts.json scripts/garment-sync-cron.ts",
-    "ats-upload": "ts-node -P tsconfig.scripts.json scripts/upload-ats-inventory.ts"
+    "ats-upload": "ts-node -P tsconfig.scripts.json scripts/upload-ats-inventory.ts",
+    "sync-inventory-levels": "ts-node -P tsconfig.scripts.json scripts/sync-inventory-levels.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",
@@ -56,6 +58,7 @@
     "googleapis": "^171.4.0",
     "lucide-react": "^0.475.0",
     "next": "14.2.35",
+    "next-themes": "^0.4.6",
     "patch-package": "^8.0.0",
     "react": "18.3.1",
     "react-day-picker": "^9.11.3",

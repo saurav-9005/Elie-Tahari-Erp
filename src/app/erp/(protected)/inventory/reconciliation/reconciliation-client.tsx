@@ -4,8 +4,11 @@ import { useEffect, useMemo, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClient } from '@/lib/supabase/client';
+import { cn } from '@/lib/utils';
+import { ReconciliationMetrics } from '../components/reconciliation-metrics';
 
 type Row = {
   sku: string;
@@ -493,54 +496,27 @@ export function ReconciliationClient() {
     XLSX.writeFile(workbook, 'style-size-mismatches.xlsx');
   };
 
+  const metricCardClass =
+    'rounded-2xl border border-[#E5E5EA] bg-white p-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)] dark:rounded-lg dark:border-border dark:bg-card dark:shadow-none dark:hover:translate-y-0 dark:hover:shadow-none';
+  const metricTitleClass =
+    'text-[12px] font-medium tracking-[0.05em] text-[#6E6E73] [font-variant:small-caps] dark:text-sm dark:tracking-normal dark:font-normal dark:text-muted-foreground';
+  const metricValueClass =
+    'mt-1 text-[48px] font-bold leading-none tabular-nums text-[#1D1D1F] dark:mt-0 dark:text-3xl dark:font-semibold dark:leading-normal dark:text-foreground';
+  const metricSubtitleClass = 'mt-2 text-xs text-[#6E6E73] dark:mt-0 dark:text-sm dark:text-muted-foreground';
+  const metricExportClass =
+    'mt-3 inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 text-sm font-medium text-[#0071E3] transition hover:opacity-80 dark:text-sm dark:text-muted-foreground dark:hover:text-foreground';
+  const tableHeadStickyClass =
+    'sticky top-0 z-30 border-b border-[#E5E5EA] bg-gray-900 py-3 text-[11px] font-medium uppercase tracking-[0.08em] text-white dark:border-border dark:bg-[#111111] dark:py-2 dark:text-sm dark:normal-case dark:tracking-normal dark:text-foreground';
+  const dataRowClass =
+    'border-b border-[#E5E5EA] transition-colors duration-200 ease-in-out hover:bg-[#F5F5F7] dark:border-border dark:hover:bg-transparent';
+
   return (
     <section className="space-y-4">
-      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-        <div className="rounded-lg border border-border bg-card p-4" style={{ width: 'calc(25% - 12px)' }}>
-          <p className="text-sm text-muted-foreground">In WMS, Not on Shopify</p>
-          <p className="text-3xl font-semibold tabular-nums">{wmsNotOnShopifyCount.toLocaleString('en-US')}</p>
-          <p className="text-sm text-muted-foreground">SKUs with warehouse stock but 0 Shopify inventory</p>
-          <div className="mt-3">
-            <Button variant="ghost" size="sm" className="h-auto px-0 text-sm text-muted-foreground hover:text-foreground" onClick={exportWmsNotOnShopifyToExcel}>
-              Export to Excel
-            </Button>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4" style={{ width: 'calc(25% - 12px)' }}>
-          <p className="text-sm text-muted-foreground">In Shopify, Not in WMS</p>
-          <p className="text-3xl font-semibold tabular-nums">{shopifyNotInWmsCount.toLocaleString('en-US')}</p>
-          <p className="text-sm text-muted-foreground">SKUs with Shopify inventory but no WMS record</p>
-          <div className="mt-3">
-            <Button variant="ghost" size="sm" className="h-auto px-0 text-sm text-muted-foreground hover:text-foreground" onClick={exportShopifyNotInWmsToExcel}>
-              Export to Excel
-            </Button>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4" style={{ width: 'calc(25% - 12px)' }}>
-          <p className="text-sm text-muted-foreground">Negative Shopify Inventory</p>
-          <p className="text-3xl font-semibold tabular-nums">{negativeShopifyCount.toLocaleString('en-US')}</p>
-          <p className="text-sm text-muted-foreground">SKUs with negative inventory in Shopify</p>
-          <div className="mt-3">
-            <Button variant="ghost" size="sm" className="h-auto px-0 text-sm text-muted-foreground hover:text-foreground" onClick={exportNegativeShopifyToExcel}>
-              Export to Excel
-            </Button>
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-4" style={{ width: 'calc(25% - 12px)' }}>
-          <p className="text-sm text-muted-foreground">Style Size Mismatches</p>
-          <p className="text-3xl font-semibold tabular-nums">{styleSizeMismatchCount.toLocaleString('en-US')}</p>
-          <p className="text-sm text-muted-foreground">Same style+color+size, different barcode</p>
-          <div className="mt-3">
-            <Button variant="ghost" size="sm" className="h-auto px-0 text-sm text-muted-foreground hover:text-foreground" onClick={exportStyleSizeMismatchesToExcel}>
-              Export to Excel
-            </Button>
-          </div>
-        </div>
-      </div>
+      <ReconciliationMetrics />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
         <div className="w-full max-w-sm space-y-2">
-          <label htmlFor="recon-sku-search" className="text-sm font-medium">
+          <label htmlFor="recon-sku-search" className="text-sm font-medium text-[#1D1D1F] dark:text-foreground">
             Search by SKU
           </label>
           <Input
@@ -548,66 +524,79 @@ export function ReconciliationClient() {
             placeholder="Type SKU..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="h-11 rounded-[10px] border border-[#E5E5EA] bg-white text-[#1D1D1F] shadow-none placeholder:text-[#6E6E73]/50 focus-visible:border-[#0071E3] focus-visible:ring-2 focus-visible:ring-[#0071E3]/25 dark:h-10 dark:rounded-md dark:border-input dark:bg-background dark:placeholder:text-muted-foreground dark:focus-visible:border-ring dark:focus-visible:ring-ring"
           />
         </div>
-        <Button variant="outline" onClick={exportToExcel}>
+        <Button
+          variant="outline"
+          onClick={exportToExcel}
+          className="h-11 rounded-[10px] border-0 bg-[#0071E3] px-5 text-sm font-medium text-white shadow-sm transition hover:bg-[#0071E3]/90 dark:h-10 dark:rounded-md dark:border dark:bg-transparent dark:text-foreground dark:shadow-none dark:hover:bg-accent"
+        >
           Export to Excel
         </Button>
       </div>
 
       {error ? (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</div>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-destructive/40 dark:bg-destructive/10 dark:text-destructive">
+          {error}
+        </div>
       ) : null}
 
-      <div className="relative rounded-lg border border-border" style={{ overflowY: 'auto', overflowX: 'auto', height: '600px' }}>
-        {loading ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/30">
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          </div>
-        ) : null}
-
-        <Table style={{ minWidth: '900px', borderCollapse: 'collapse', width: '100%' }}>
+      <div
+        className="relative overflow-y-auto overflow-x-auto rounded-xl border border-[#E5E5EA] bg-white dark:rounded-lg dark:border-border dark:bg-transparent"
+        style={{ height: '600px' }}
+      >
+        <Table className="min-w-[900px] border-collapse bg-white dark:bg-transparent" style={{ width: '100%' }}>
           <TableHeader>
-            <TableRow>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>SKU</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Color</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Color Desc</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Size</TableHead>
-              <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
-                WMS Qty
-              </TableHead>
-              <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
-                Shopify Qty
-              </TableHead>
-              <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
-                Difference
-              </TableHead>
+            <TableRow className="border-[#E5E5EA] hover:bg-transparent dark:border-border">
+              <TableHead className={cn(tableHeadStickyClass, 'text-left')}>SKU</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Color</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Color Desc</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Size</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-right')}>WMS Qty</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-right')}>Shopify Qty</TableHead>
+              <TableHead className={cn(tableHeadStickyClass, 'text-right')}>Difference</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {pagedRows.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+            {loading ? (
+              Array.from({ length: 10 }).map((_, rowIdx) => (
+                <TableRow key={`recon-main-row-skel-${rowIdx}`} className={dataRowClass}>
+                  {Array.from({ length: 7 }).map((__, cellIdx) => (
+                    <TableCell key={`recon-main-cell-skel-${rowIdx}-${cellIdx}`}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : pagedRows.length === 0 ? (
+              <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
+                <TableCell colSpan={7} className="h-24 text-center text-[#6E6E73] dark:text-muted-foreground">
                   No rows found.
                 </TableCell>
               </TableRow>
             ) : (
               pagedRows.map((row) => (
-                <TableRow key={row.sku}>
-                  <TableCell>{row.sku}</TableCell>
-                  <TableCell>{row.color ?? '—'}</TableCell>
-                  <TableCell>{row.color_desc ?? '—'}</TableCell>
-                  <TableCell>{row.size ?? '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">{row.ats_qty.toLocaleString('en-US')}</TableCell>
-                  <TableCell className="text-right tabular-nums">{row.shopify_qty.toLocaleString('en-US')}</TableCell>
+                <TableRow key={row.sku} className={dataRowClass}>
+                  <TableCell className="font-mono text-[#1D1D1F] dark:font-sans dark:text-foreground">{row.sku}</TableCell>
+                  <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.color ?? '—'}</TableCell>
+                  <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.color_desc ?? '—'}</TableCell>
+                  <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.size ?? '—'}</TableCell>
+                  <TableCell className="text-right tabular-nums text-[#1D1D1F] dark:text-foreground">
+                    {row.ats_qty.toLocaleString('en-US')}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-[#1D1D1F] dark:text-foreground">
+                    {row.shopify_qty.toLocaleString('en-US')}
+                  </TableCell>
                   <TableCell
-                    className={
+                    className={cn(
+                      'text-right tabular-nums',
                       row.difference === 0
-                        ? 'text-right tabular-nums text-emerald-400'
+                        ? 'text-[#34C759] dark:text-emerald-400'
                         : row.difference > 0
-                          ? 'text-right tabular-nums text-amber-400'
-                          : 'text-right tabular-nums text-red-400'
-                    }
+                          ? 'text-[#FF9500] dark:text-amber-400'
+                          : 'text-[#FF3B30] dark:text-red-400'
+                    )}
                   >
                     {row.difference > 0 ? `+${row.difference.toLocaleString('en-US')}` : row.difference.toLocaleString('en-US')}
                   </TableCell>
@@ -619,16 +608,23 @@ export function ReconciliationClient() {
       </div>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={currentPage <= 1}
+          className="rounded-lg border border-[#E5E5EA] bg-white text-[#1D1D1F] transition hover:bg-[#F5F5F7] dark:border-input dark:bg-transparent dark:text-foreground dark:hover:bg-accent"
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+        >
           Previous
         </Button>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-[#6E6E73] dark:text-muted-foreground">
           Page {currentPage} of {totalPages}
         </p>
         <Button
           variant="outline"
           size="sm"
           disabled={currentPage >= totalPages}
+          className="rounded-lg border border-[#E5E5EA] bg-white text-[#1D1D1F] transition hover:bg-[#F5F5F7] dark:border-input dark:bg-transparent dark:text-foreground dark:hover:bg-accent"
           onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
         >
           Next
@@ -636,36 +632,51 @@ export function ReconciliationClient() {
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">Style Size Mismatch Details</h3>
+        <h3 className="mb-4 border-b-2 border-[#0071E3] pb-2 text-lg font-semibold text-[#1D1D1F] dark:mb-0 dark:border-0 dark:pb-0 dark:text-lg dark:text-foreground">
+          Barcode Mismatch Details
+        </h3>
         <div
-          className="relative rounded-lg border border-border"
-          style={{ overflowY: 'auto', overflowX: 'auto', height: '400px' }}
+          className="relative overflow-y-auto overflow-x-auto rounded-xl border border-[#E5E5EA] bg-white dark:rounded-lg dark:border-border dark:bg-transparent"
+          style={{ minWidth: '700px', height: '400px' }}
         >
-          <Table style={{ minWidth: '700px', borderCollapse: 'collapse', width: '100%' }}>
+          <Table className="min-w-[700px] border-collapse bg-white dark:bg-transparent" style={{ width: '100%' }}>
             <TableHeader>
-              <TableRow>
-                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Style</TableHead>
-                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Color</TableHead>
-                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Size</TableHead>
-                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>WMS Barcode</TableHead>
-                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Shopify Barcode</TableHead>
+              <TableRow className="border-[#E5E5EA] hover:bg-transparent dark:border-border">
+                <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Style</TableHead>
+                <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Color</TableHead>
+                <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Size</TableHead>
+                <TableHead className={cn(tableHeadStickyClass, 'text-left')}>WMS Barcode</TableHead>
+                <TableHead className={cn(tableHeadStickyClass, 'text-left')}>Shopify Barcode</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mismatches.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+              {loading ? (
+                Array.from({ length: 8 }).map((_, rowIdx) => (
+                  <TableRow key={`recon-mismatch-row-skel-${rowIdx}`} className={dataRowClass}>
+                    {Array.from({ length: 5 }).map((__, cellIdx) => (
+                      <TableCell key={`recon-mismatch-cell-skel-${rowIdx}-${cellIdx}`}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : mismatches.length === 0 ? (
+                <TableRow className="border-0 hover:bg-transparent dark:hover:bg-transparent">
+                  <TableCell colSpan={5} className="h-24 text-center text-[#6E6E73] dark:text-muted-foreground">
                     No rows found.
                   </TableCell>
                 </TableRow>
               ) : (
                 mismatches.map((row, idx) => (
-                  <TableRow key={`${row.style}-${row.color ?? 'c'}-${row.size ?? 'size'}-${row.wms_barcode}-${row.shopify_barcode}-${idx}`}>
-                    <TableCell>{row.style}</TableCell>
-                    <TableCell>{row.color}</TableCell>
-                    <TableCell>{row.size}</TableCell>
-                    <TableCell>{row.wms_barcode}</TableCell>
-                    <TableCell>{row.shopify_barcode}</TableCell>
+                  <TableRow
+                    key={`${row.style}-${row.color ?? 'c'}-${row.size ?? 'size'}-${row.wms_barcode}-${row.shopify_barcode}-${idx}`}
+                    className={dataRowClass}
+                  >
+                    <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.style}</TableCell>
+                    <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.color}</TableCell>
+                    <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.size}</TableCell>
+                    <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.wms_barcode}</TableCell>
+                    <TableCell className="text-[#1D1D1F] dark:text-foreground">{row.shopify_barcode}</TableCell>
                   </TableRow>
                 ))
               )}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClient } from '@/lib/supabase/client';
 
@@ -80,7 +81,6 @@ export function NextMonthDeliveriesSection() {
   const [error, setError] = useState<string | null>(null);
 
   const currentMonth = new Date().getMonth() + 1;
-  const nextMonth = currentMonth === 12 ? 1 : currentMonth + 1;
 
   useEffect(() => {
     let cancelled = false;
@@ -109,18 +109,32 @@ export function NextMonthDeliveriesSection() {
     };
   }, []);
 
-  const nextMonthRows = useMemo(() => {
-    return rows
-      .filter((row) => extractMonthFromStyle(row.style_number) === nextMonth)
-      .sort((a, b) => (a.style_number ?? '').localeCompare(b.style_number ?? ''));
-  }, [rows, nextMonth]);
+  const monthSections = useMemo(() => {
+    const filtered = rows.filter((row) => {
+      const m = extractMonthFromStyle(row.style_number);
+      return m != null && m >= currentMonth;
+    });
+    const byMonth = new Map<number, GarmentDeliveryRow[]>();
+    for (const row of filtered) {
+      const m = extractMonthFromStyle(row.style_number);
+      if (m == null) continue;
+      const list = byMonth.get(m) ?? [];
+      list.push(row);
+      byMonth.set(m, list);
+    }
+    for (const list of byMonth.values()) {
+      list.sort((a, b) => (a.style_number ?? '').localeCompare(b.style_number ?? ''));
+    }
+    const months = Array.from(byMonth.keys()).sort((a, b) => a - b);
+    return months.map((month) => ({ month, rows: byMonth.get(month) ?? [] }));
+  }, [rows, currentMonth]);
 
   return (
     <section className="space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-headline text-xl font-semibold tracking-tight">{MONTH_NAMES[nextMonth - 1]} DELIVERIES</h2>
-          <p className="text-sm text-muted-foreground">Upcoming factory deliveries</p>
+          <h2 className="font-headline text-xl font-semibold tracking-tight">Current & Upcoming Factory Deliveries</h2>
+          <p className="text-sm text-muted-foreground">Current and upcoming factory deliveries</p>
         </div>
         <Button asChild variant="outline" size="sm">
           <Link href="/erp/inventory/factory-po">View All</Link>
@@ -140,56 +154,78 @@ export function NextMonthDeliveriesSection() {
           width: '100%',
         }}
       >
-        {loading ? (
-          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/30">
-            <p className="text-sm text-muted-foreground">Loading...</p>
-          </div>
-        ) : null}
         <Table style={{ minWidth: '1400px', borderCollapse: 'collapse', width: '100%' }}>
           <TableHeader>
-            <TableRow>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Delivery Date</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Factory</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Style Number</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Body</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Country of Origin</TableHead>
-              <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
-                Projected Units
-              </TableHead>
-              <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
-                Actual Shipped
-              </TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Air/Boat</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>ETD Date</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>ETA Date</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>NJ Whse Date</TableHead>
-              <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Comments</TableHead>
-            </TableRow>
+            {loading ? (
+              <TableRow>
+                {Array.from({ length: 8 }).map((_, idx) => (
+                  <TableHead key={`next-month-head-skel-${idx}`} style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
+                    <Skeleton className="h-4 w-full" />
+                  </TableHead>
+                ))}
+              </TableRow>
+            ) : (
+              <TableRow>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Delivery Date</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Factory</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Style Number</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Body</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Country of Origin</TableHead>
+                <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
+                  Projected Units
+                </TableHead>
+                <TableHead className="text-right" style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>
+                  Actual Shipped
+                </TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Air/Boat</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>ETD Date</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>ETA Date</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>NJ Whse Date</TableHead>
+                <TableHead style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: '#111111' }}>Comments</TableHead>
+              </TableRow>
+            )}
           </TableHeader>
           <TableBody>
-            {nextMonthRows.length === 0 ? (
+            {loading ? (
+              Array.from({ length: 8 }).map((_, rowIdx) => (
+                <TableRow key={`next-month-row-skel-${rowIdx}`}>
+                  {Array.from({ length: 8 }).map((__, cellIdx) => (
+                    <TableCell key={`next-month-cell-skel-${rowIdx}-${cellIdx}`}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : monthSections.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={12} className="h-24 text-center text-muted-foreground">
                   No rows found.
                 </TableCell>
               </TableRow>
             ) : (
-              nextMonthRows.map((row, idx) => (
-                <TableRow key={`${row.style_number ?? 'style'}-${idx}`}>
-                  <TableCell>{row.estimate_x_garment_delivery_date ?? '—'}</TableCell>
-                  <TableCell>{row.factory ?? '—'}</TableCell>
-                  <TableCell>{row.style_number ?? '—'}</TableCell>
-                  <TableCell>{row.body ?? '—'}</TableCell>
-                  <TableCell>{row.country_of_origin ?? '—'}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatNumber(row.projected_units)}</TableCell>
-                  <TableCell className="text-right tabular-nums">{formatNumber(row.actual_shipped_units)}</TableCell>
-                  <TableCell>{row.air_boat ?? '—'}</TableCell>
-                  <TableCell>{row.etd_date ?? '—'}</TableCell>
-                  <TableCell>{row.eta_date ?? '—'}</TableCell>
-                  <TableCell>{row.in_nj_whse_date ?? '—'}</TableCell>
-                  <TableCell>{row.comments ?? '—'}</TableCell>
-                </TableRow>
-              ))
+              monthSections.flatMap((section) => [
+                <TableRow key={`group-${section.month}`}>
+                  <TableCell colSpan={12} className="font-semibold">
+                    {MONTH_NAMES[section.month - 1]} DELIVERIES
+                  </TableCell>
+                </TableRow>,
+                ...section.rows.map((row, idx) => (
+                  <TableRow key={`${row.style_number ?? 'style'}-${section.month}-${idx}`}>
+                    <TableCell>{row.estimate_x_garment_delivery_date ?? '—'}</TableCell>
+                    <TableCell>{row.factory ?? '—'}</TableCell>
+                    <TableCell>{row.style_number ?? '—'}</TableCell>
+                    <TableCell>{row.body ?? '—'}</TableCell>
+                    <TableCell>{row.country_of_origin ?? '—'}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatNumber(row.projected_units)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{formatNumber(row.actual_shipped_units)}</TableCell>
+                    <TableCell>{row.air_boat ?? '—'}</TableCell>
+                    <TableCell>{row.etd_date ?? '—'}</TableCell>
+                    <TableCell>{row.eta_date ?? '—'}</TableCell>
+                    <TableCell>{row.in_nj_whse_date ?? '—'}</TableCell>
+                    <TableCell>{row.comments ?? '—'}</TableCell>
+                  </TableRow>
+                )),
+              ])
             )}
           </TableBody>
         </Table>

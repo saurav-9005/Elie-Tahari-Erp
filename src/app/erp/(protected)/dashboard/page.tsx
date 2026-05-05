@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { redirect } from 'next/navigation';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import { START_OF_2026 } from '@/lib/erp/dashboard-constants';
 import { getServerSession, hasRole } from '@/lib/supabase/session';
@@ -18,13 +19,17 @@ const sectionLabel =
 export default async function ErpDashboardPage() {
   const session = await getServerSession();
 
+  if (hasRole(session, ['admin'])) {
+    redirect('/erp/inventory/dashboard');
+  }
+
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   const startIso = start.toISOString();
   const ordersFrom = startIso >= START_OF_2026 ? startIso : START_OF_2026;
 
   let ordersToday: number | null = null;
-  if (hasRole(session, ['admin', 'finance'])) {
+  if (hasRole(session, ['super admin', 'admin', 'finance'])) {
     const supabase = createServiceRoleClient();
     const { count, error } = await supabase
       .from('orders')
@@ -34,7 +39,7 @@ export default async function ErpDashboardPage() {
   }
 
   let pendingSync: number | null = null;
-  if (hasRole(session, ['admin'])) {
+  if (hasRole(session, ['super admin', 'admin'])) {
     const supabase = createServiceRoleClient();
     const { count, error } = await supabase
       .from('shopify_events')
@@ -44,13 +49,13 @@ export default async function ErpDashboardPage() {
   }
 
   let lowStock: number | null = null;
-  if (hasRole(session, ['admin', 'warehouse'])) {
+  if (hasRole(session, ['super admin', 'admin', 'warehouse'])) {
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase.from('inventory').select('id').lt('quantity', 5);
     lowStock = error ? null : data?.length ?? 0;
   }
 
-  const showIntel = hasRole(session, ['admin', 'finance', 'viewer']);
+  const showIntel = hasRole(session, ['super admin', 'admin', 'finance', 'viewer']);
 
   return (
     <div>
@@ -58,7 +63,7 @@ export default async function ErpDashboardPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Data from Supabase (webhook pipeline). Cards respect your role. Order analytics are 2026-only.
       </p>
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base">Orders today</CardTitle>

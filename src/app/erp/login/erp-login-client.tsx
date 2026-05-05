@@ -4,13 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/lib/database.types';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+
+const VIDEO_SRC =
+  'https://cdn.shopify.com/videos/c/o/v/5b0290163cd7430d9e819daecaf224c3.mp4';
 
 function createSupabaseBrowser() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -76,37 +72,72 @@ export function ErpLoginClient() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0a0a0a] px-4 py-12">
-      <Card className="w-full max-w-md border-border/60 bg-[#141414] shadow-2xl">
-        <CardHeader className="space-y-3 pb-2 text-center">
-          <h1 className="font-headline text-3xl font-bold tracking-[0.2em] text-white md:text-4xl">
-            ELIE TAHARI
-          </h1>
-          <CardDescription className="text-base text-zinc-400">Sign in to continue</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 pb-8 pt-2">
+    <>
+      <video
+        className="fixed left-0 top-0 z-0 h-full w-full object-cover"
+        style={{ top: 0, left: 0, width: '100%', height: '100%' }}
+        autoPlay
+        muted
+        loop
+        playsInline
+        src={VIDEO_SRC}
+        aria-hidden
+      />
+      <div
+        className="fixed inset-0 z-[1]"
+        style={{ background: 'rgba(0,0,0,0.55)' }}
+        aria-hidden
+      />
+
+      <div className="relative z-[2] flex min-h-screen items-center justify-center px-4 py-12">
+        <div
+          className="w-full text-white"
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            maxWidth: 400,
+            width: '100%',
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 16,
+            padding: 40,
+          }}
+        >
+          <div className="mb-8 text-center">
+            <h1
+              className="font-headline text-3xl font-light tracking-[0.28em] text-white md:text-4xl"
+              style={{ letterSpacing: '0.22em' }}
+            >
+              ELIE TAHARI
+            </h1>
+            <p className="mt-2 text-sm text-white/60">Enterprise Resource Planning</p>
+          </div>
+
           {!configured ? (
-            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-left text-sm text-zinc-200">
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-left text-sm text-white/90">
               <p className="font-medium text-amber-200">Supabase environment variables missing</p>
-              <p className="mt-2 text-zinc-400">
-                Add <code className="rounded bg-zinc-800 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
-                <code className="rounded bg-zinc-800 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to{' '}
-                <code className="rounded bg-zinc-800 px-1">.env.local</code>, then restart the dev
+              <p className="mt-2 text-white/70">
+                Add <code className="rounded bg-white/10 px-1">NEXT_PUBLIC_SUPABASE_URL</code> and{' '}
+                <code className="rounded bg-white/10 px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> to{' '}
+                <code className="rounded bg-white/10 px-1">.env.local</code>, then restart the dev
                 server.
               </p>
             </div>
           ) : (
-            <Button
-              type="button"
-              size="lg"
-              onClick={() => void handleSignIn()}
-              className="h-12 w-full border-0 bg-gradient-to-r from-indigo-600 to-violet-600 text-base font-semibold text-white shadow-lg transition hover:from-indigo-500 hover:to-violet-500 hover:shadow-xl"
-            >
-              Continue with Google
-            </Button>
+            <div className="space-y-6 text-white">
+              <button
+                type="button"
+                onClick={() => void handleSignIn()}
+                className="w-full rounded-lg border border-white/30 bg-transparent py-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              >
+                Continue with Google
+              </button>
+            </div>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -7,7 +7,7 @@ export const maxDuration = 120;
 
 export async function GET() {
   const session = await getServerSession();
-  if (!session?.profile || !hasRole(session, ['admin'])) {
+  if (!session?.profile || !hasRole(session, ['super admin'])) {
     return new Response('Forbidden', { status: 403 });
   }
 

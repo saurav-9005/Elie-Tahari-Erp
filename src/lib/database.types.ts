@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type AppRole = 'admin' | 'finance' | 'warehouse' | 'viewer';
+export type AppRole = 'super admin' | 'admin' | 'finance' | 'warehouse' | 'viewer';
 export type ProfileStatus = 'pending' | 'active' | 'disabled';
 export type ShopifyEventStatus = 'pending' | 'processed' | 'failed';
 export type InviteStatus = 'sent' | 'accepted' | 'expired';

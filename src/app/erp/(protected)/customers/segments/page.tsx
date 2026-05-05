@@ -20,7 +20,7 @@ function PanelSkeleton() {
 
 export default async function CustomerSegmentsPage() {
   const session = await getServerSession();
-  if (!hasRole(session, ['admin', 'finance'])) {
+  if (!hasRole(session, ['super admin', 'admin', 'finance'])) {
     return <ErpForbidden />;
   }
 

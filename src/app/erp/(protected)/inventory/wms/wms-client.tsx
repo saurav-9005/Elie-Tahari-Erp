@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { createClient } from '@/lib/supabase/client';
 
@@ -43,6 +45,13 @@ export function WmsClient() {
   const [rows, setRows] = useState<WmsReceivingReportRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [styleSearch, setStyleSearch] = useState('');
+
+  const filteredRows = useMemo(() => {
+    const q = styleSearch.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((row) => (row.Style ?? '').toLowerCase().includes(q));
+  }, [rows, styleSearch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,6 +102,20 @@ export function WmsClient() {
         </div>
       ) : null}
 
+      <div className="space-y-2">
+        <Label htmlFor="wms-style-search" className="text-sm text-muted-foreground">
+          Search by Style
+        </Label>
+        <Input
+          id="wms-style-search"
+          className="max-w-sm border-border bg-background"
+          placeholder="Type style number..."
+          value={styleSearch}
+          onChange={(e) => setStyleSearch(e.target.value)}
+          aria-label="Search by Style"
+        />
+      </div>
+
       <div className="relative overflow-x-auto rounded-lg border border-border">
         {loading ? (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/30">
@@ -112,14 +135,14 @@ export function WmsClient() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.length === 0 ? (
+            {filteredRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   No rows found.
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((row, idx) => (
+              filteredRows.map((row, idx) => (
                 <TableRow key={`${row['Style'] ?? 'style'}-${row['Vendor Name'] ?? 'vendor'}-${idx}`}>
                   <TableCell>{row['Vendor Name'] ?? '—'}</TableCell>
                   <TableCell>{row['Style'] ?? '—'}</TableCell>
