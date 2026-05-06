@@ -100,7 +100,15 @@ async function fetchInventoryPositiveQty(supabase: ReturnType<typeof createClien
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  return allRows.filter((row) => row.sku != null && row.sku !== '');
+  return allRows.filter((row) => {
+    if (row.sku == null || row.sku === '') return false;
+    const sku = row.sku.toLowerCase().trim();
+    return (
+      !sku.startsWith('protect-') &&
+      !sku.startsWith('gift-card') &&
+      !sku.startsWith('gift-card-')
+    );
+  });
 }
 
 async function fetchNegativeInventory(supabase: ReturnType<typeof createClient>) {
@@ -120,7 +128,16 @@ async function fetchNegativeInventory(supabase: ReturnType<typeof createClient>)
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  return allRows.filter((row) => row.sku != null && row.sku !== '');
+  return allRows.filter((row) => {
+    if (!row.sku) return false;
+    const sku = String(row.sku).toLowerCase().trim();
+    return (
+      !sku.startsWith('protect-') &&
+      !sku.startsWith('gift-card') &&
+      !sku.startsWith('gift-card-') &&
+      !sku.startsWith('giftcard')
+    );
+  });
 }
 
 async function fetchAllAtsForMismatch(supabase: ReturnType<typeof createClient>) {
@@ -258,7 +275,19 @@ export function ReconciliationMetrics() {
         shopifyOnlyList.sort((a, b) => (a.sku ?? '').localeCompare(b.sku ?? ''));
         setShopifyNotInWmsRows(shopifyOnlyList);
 
-        const negativeList = negativeInventoryRows.map((row) => ({ sku: row.sku, shopify_qty: row.quantity })).sort((a, b) => (a.sku ?? '').localeCompare(b.sku ?? ''));
+        const negativeList = negativeInventoryRows
+          .map((row) => ({ sku: row.sku, shopify_qty: row.quantity }))
+          .filter((row) => {
+            if (!row.sku) return false;
+            const sku = String(row.sku).toLowerCase().trim();
+            return (
+              !sku.startsWith('protect-') &&
+              !sku.startsWith('gift-card') &&
+              !sku.startsWith('gift-card-') &&
+              !sku.startsWith('giftcard')
+            );
+          })
+          .sort((a, b) => (a.sku ?? '').localeCompare(b.sku ?? ''));
         setNegativeShopifyRows(negativeList);
 
         const atsMismatchMap = new Map<string, { style: string; color: string; size: string; barcode: string }>();
@@ -355,7 +384,18 @@ export function ReconciliationMetrics() {
   };
 
   const exportNegativeShopifyToExcel = () => {
-    const exportRows = negativeShopifyRows.map((row) => ({ SKU: row.sku, 'Shopify Qty': row.shopify_qty }));
+    const exportRows = negativeShopifyRows
+      .filter((row) => {
+        if (!row.sku) return false;
+        const sku = String(row.sku).toLowerCase().trim();
+        return (
+          !sku.startsWith('protect-') &&
+          !sku.startsWith('gift-card') &&
+          !sku.startsWith('gift-card-') &&
+          !sku.startsWith('giftcard')
+        );
+      })
+      .map((row) => ({ SKU: row.sku, 'Shopify Qty': row.shopify_qty }));
     const sheet = XLSX.utils.json_to_sheet(exportRows, { header: ['SKU', 'Shopify Qty'] });
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, sheet, 'Negative Shopify Inventory');
