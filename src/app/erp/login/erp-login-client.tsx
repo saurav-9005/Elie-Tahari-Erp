@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Database } from '@/lib/database.types';
@@ -106,12 +107,14 @@ export function ErpLoginClient() {
           }}
         >
           <div className="mb-8 text-center">
-            <h1
-              className="font-headline text-3xl font-light tracking-[0.28em] text-white md:text-4xl"
-              style={{ letterSpacing: '0.22em' }}
-            >
-              ELIE TAHARI
-            </h1>
+            <Image
+              src="/logo.png"
+              alt="Elie Tahari"
+              width={500}
+              height={80}
+              className="mx-auto object-contain"
+              priority
+            />
             <p className="mt-2 text-sm text-white/60">Enterprise Resource Planning</p>
           </div>
 
