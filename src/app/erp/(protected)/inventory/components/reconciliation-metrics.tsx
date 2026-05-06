@@ -419,7 +419,7 @@ export function ReconciliationMetrics() {
         <button type="button" className={metricExportClass} onClick={exportNegativeShopifyToExcel}>Export to Excel <span aria-hidden>→</span></button>
       </div>
       <div className={cn(metricCardClass, 'w-full md:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]')}>
-        <p className={metricTitleClass}>Style Size Mismatches</p>
+        <p className={metricTitleClass}>Barcode Mismatch</p>
         <p className={metricValueClass}>{styleSizeMismatchCount.toLocaleString('en-US')}</p>
         <p className={metricSubtitleClass}>Same style+color+size, different barcode</p>
         <button type="button" className={metricExportClass} onClick={exportStyleSizeMismatchesToExcel}>Export to Excel <span aria-hidden>→</span></button>
