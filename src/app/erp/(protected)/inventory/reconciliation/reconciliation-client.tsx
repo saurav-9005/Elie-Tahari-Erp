@@ -134,7 +134,16 @@ async function fetchInventoryPositiveQty(supabase: ReturnType<typeof createClien
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  return allRows.filter((row) => row.sku != null && row.sku !== '');
+  const filtered = allRows.filter((row) => {
+    const sku = (row.sku ?? '').toLowerCase();
+    return (
+      row.sku != null &&
+      row.sku !== '' &&
+      !sku.startsWith('protect-') &&
+      !sku.startsWith('gift-card-')
+    );
+  });
+  return filtered;
 }
 
 async function fetchNegativeInventory(supabase: ReturnType<typeof createClient>) {
