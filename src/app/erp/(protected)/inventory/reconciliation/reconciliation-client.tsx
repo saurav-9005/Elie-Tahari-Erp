@@ -163,7 +163,15 @@ async function fetchNegativeInventory(supabase: ReturnType<typeof createClient>)
     if (data.length < pageSize) break;
     from += pageSize;
   }
-  return allRows.filter((row) => row.sku != null && row.sku !== '');
+  return allRows.filter((row) => {
+    if (row.sku == null || row.sku === '') return false;
+    const sku = row.sku.toLowerCase().trim();
+    return (
+      !sku.startsWith('protect-') &&
+      !sku.startsWith('gift-card') &&
+      !sku.startsWith('gift-card-')
+    );
+  });
 }
 
 async function fetchAllAtsForMismatch(supabase: ReturnType<typeof createClient>) {
@@ -298,13 +306,24 @@ export function ReconciliationClient() {
         }
         shopifyOnlyList.sort((a, b) => (a.sku ?? '').localeCompare(b.sku ?? ''));
         if (!cancelled) setShopifyNotInWmsRows(shopifyOnlyList);
-        const negativeList = negativeInventoryRows
+        const allFetchedRows = negativeInventoryRows
           .map((row) => ({
             sku: row.sku,
             shopify_qty: row.quantity,
           }))
           .sort((a, b) => (a.sku ?? '').localeCompare(b.sku ?? ''));
-        if (!cancelled) setNegativeShopifyRows(negativeList);
+        const negativeRows = allFetchedRows.filter((row) => {
+          const sku = (row.sku ?? '').toLowerCase().trim();
+          return (
+            !sku.startsWith('protect-') &&
+            !sku.startsWith('gift-card-') &&
+            sku !== '' &&
+            sku != null
+          );
+        });
+        console.log('Negative rows after filter:', negativeRows.length);
+        console.log('Sample SKUs:', negativeRows.slice(0, 3).map((r) => r.sku));
+        if (!cancelled) setNegativeShopifyRows(negativeRows);
 
         const atsMismatchMap = new Map<string, { style: string; color: string; size: string; barcode: string }>();
         for (const row of atsMismatchRows) {
