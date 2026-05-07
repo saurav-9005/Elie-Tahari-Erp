@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 import { createClient } from '@supabase/supabase-js';
 
-const SPREADSHEET_ID = '1gz4TBAQiPxvAxx46KhsXSAn5KvXvJEaVp8eUOjDeIz8';
+const SPREADSHEET_ID = '1xW0xwnFX93Rc0O7O4gjxKdId0WcJZSA0ISRasJkjm34';
 const BATCH_SIZE = 500;
 const TARGET_YEAR = 2026;
 
@@ -154,7 +154,7 @@ function parseTabRows(tabName: string, rows: string[][]): ParsedRow[] {
     if (!styleNumber) continue;
 
     const factoryRaw = getCell(row, headerMap, 'FACTORY');
-    const factory = factoryRaw ?? lastFactory ?? '';
+    const factory: string = factoryRaw ?? lastFactory ?? '';
     if (factory) lastFactory = factory;
 
     const estimateRaw = getCell(row, headerMap, 'ESTIMATE X GARMENT DELIVERY');

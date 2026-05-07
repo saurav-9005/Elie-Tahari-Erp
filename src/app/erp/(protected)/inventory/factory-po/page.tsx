@@ -11,7 +11,7 @@ export default function FactoryPoPage() {
           <p className="text-sm text-muted-foreground">Garment delivery schedule</p>
         </div>
         <Button asChild variant="outline" size="sm">
-          <a href="https://docs.google.com/spreadsheets/d/1gz4TBAQiPxvAxx46KhsXSAn5KvXvJEaVp8eUOjDeIz8/edit" target="_blank" rel="noreferrer">
+          <a href="https://docs.google.com/spreadsheets/d/1xW0xwnFX93Rc0O7O4gjxKdId0WcJZSA0ISRasJkjm34/edit?gid=1481828456#gid=1481828456" target="_blank" rel="noreferrer">
             <ExternalLink className="mr-1 h-4 w-4" />
             Open in Google Sheets
           </a>
