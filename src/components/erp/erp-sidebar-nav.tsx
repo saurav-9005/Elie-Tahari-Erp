@@ -60,6 +60,7 @@ const inventoryItems = [
   { href: '/erp/inventory/factory-po', label: 'Factory POs' },
   { href: '/erp/inventory/wms', label: 'Warehouse' },
   { href: '/erp/inventory/store', label: 'Store' },
+  { href: '/erp/inventory/donation', label: 'Donation' },
 ];
 
 const productOnboardingItems = [{ href: '/erp/upc-code', label: 'UPC Code' }];
