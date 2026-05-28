@@ -53,6 +53,11 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const ordersItems = [
+  { href: '/erp/orders/dashboard', label: 'Dashboard' },
+  { href: '/erp/orders/sync', label: 'Sync' },
+];
+
 const inventoryItems = [
   { href: '/erp/inventory/dashboard', label: 'Dashboard' },
   { href: '/erp/inventory/reconciliation', label: 'Inventory Reconciliation' },
@@ -116,6 +121,7 @@ export function ErpSidebarNav({
     () => (userRole === 'admin' ? items.filter((item) => ADMIN_SIDEBAR_HREFS.has(item.href)) : items),
     [userRole]
   );
+  const ordersActive = pathname.startsWith('/erp/orders');
   const inventoryActive = pathname.startsWith('/erp/inventory');
   const customersActive = pathname.startsWith('/erp/customers');
   const productOnboardingActive = pathname.startsWith('/erp/upc-code');
@@ -126,6 +132,7 @@ export function ErpSidebarNav({
 
   const [collapsed, setCollapsed] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(ordersActive);
   const [inventoryOpen, setInventoryOpen] = useState(inventoryActive);
   const [customersOpen, setCustomersOpen] = useState(customersActive);
   const [productOnboardingOpen, setProductOnboardingOpen] = useState(productOnboardingActive);
@@ -181,14 +188,42 @@ export function ErpSidebarNav({
           <ul className="flex flex-col gap-1">
             {navItems.map(({ href, label, icon: Icon }) => (
               <li key={href}>
-                <CollapsedItem href={href} label={label} icon={Icon} disabled={href === '/erp/orders'} />
+                <CollapsedItem href={href} label={label} icon={Icon} />
               </li>
             ))}
           </ul>
         ) : (
           <ul className="flex flex-col gap-0.5">
             {navItems.map(({ href, label, icon: Icon }) => (
-              href === '/erp/inventory' ? (
+              href === '/erp/orders' ? (
+                <li key={href}>
+                  <Collapsible open={ordersOpen} onOpenChange={setOrdersOpen}>
+                    <CollapsibleTrigger className={cn(navItemClass(ordersActive, false), 'w-full justify-between')}>
+                      <span className="flex items-center gap-2">
+                        <ReceiptText className="h-4 w-4 shrink-0" />
+                        Orders
+                      </span>
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', ordersOpen ? 'rotate-180' : '')} />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="mt-1 space-y-0.5">
+                      {ordersItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          className={cn(
+                            'ml-6 flex rounded-md px-2 py-1.5 text-sm transition-colors',
+                            isActive(pathname, item.href)
+                              ? 'border-l-2 border-[#0071E3] bg-muted font-medium text-foreground dark:border-white'
+                              : 'border-l-2 border-transparent text-muted-foreground hover:bg-muted hover:text-foreground'
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </li>
+              ) : href === '/erp/inventory' ? (
                 <li key={href}>
                   <Collapsible open={inventoryOpen} onOpenChange={setInventoryOpen}>
                     <CollapsibleTrigger className={cn(navItemClass(inventoryActive, false), 'w-full justify-between')}>
@@ -302,7 +337,7 @@ export function ErpSidebarNav({
                 </li>
               ) : (
                 <li key={href}>
-                  <Link href={href} className={navItemClass(isActive(pathname, href), false, href === '/erp/orders')}>
+                  <Link href={href} className={navItemClass(isActive(pathname, href), false)}>
                     <Icon className="h-4 w-4 shrink-0" />
                     <span>{label}</span>
                   </Link>
