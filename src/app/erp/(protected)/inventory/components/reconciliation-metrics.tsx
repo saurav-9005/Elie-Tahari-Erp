@@ -91,6 +91,7 @@ async function fetchInventoryPositiveQty(supabase: ReturnType<typeof createClien
     const { data, error } = await supabase
       .from('inventory' as never)
       .select('sku,quantity')
+      .eq('product_status', 'active')
       .gt('quantity', 0)
       .order('sku', { ascending: true })
       .range(from, from + pageSize - 1);
@@ -119,6 +120,7 @@ async function fetchNegativeInventory(supabase: ReturnType<typeof createClient>)
     const { data, error } = await supabase
       .from('inventory' as never)
       .select('sku,quantity')
+      .eq('product_status', 'active')
       .lt('quantity', 0)
       .order('sku', { ascending: true })
       .range(from, from + pageSize - 1);

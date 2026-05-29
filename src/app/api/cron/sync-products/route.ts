@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
-export const maxDuration = 60
+export const maxDuration = 300
 
 async function fetchShopifyPage(url: string, accessToken: string) {
   const res = await fetch(url, {
@@ -31,7 +31,7 @@ async function syncProducts(): Promise<number> {
   )
 
   let url: string | null =
-    `${shopifyUrl}/admin/api/2024-01/products.json?limit=250`
+    `${shopifyUrl}/admin/api/2024-01/products.json?limit=250&updated_at_min=${new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()}`
   let totalProducts = 0
   let totalVariants = 0
 
