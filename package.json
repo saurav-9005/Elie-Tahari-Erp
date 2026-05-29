@@ -21,7 +21,8 @@
     "garment-sync-cron": "ts-node -P tsconfig.scripts.json scripts/garment-sync-cron.ts",
     "ats-upload": "ts-node -P tsconfig.scripts.json scripts/upload-ats-inventory.ts",
     "ats-sync-storage": "ts-node -P tsconfig.scripts.json scripts/sync-ats-from-storage.ts",
-    "sync-inventory-levels": "ts-node -P tsconfig.scripts.json scripts/sync-inventory-levels.ts"
+    "sync-inventory-levels": "ts-node -P tsconfig.scripts.json scripts/sync-inventory-levels.ts",
+    "sync-products": "ts-node -P tsconfig.scripts.json scripts/sync-products.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.28.0",

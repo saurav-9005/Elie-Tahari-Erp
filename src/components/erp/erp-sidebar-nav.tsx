@@ -187,7 +187,7 @@ export function ErpSidebarNav({
         {effectiveCollapsed ? (
           <ul className="flex flex-col gap-1">
             {navItems.map(({ href, label, icon: Icon }) => (
-              <li key={href}>
+              <li key={href} className={href === '/erp/inventory' ? undefined : 'hidden'}>
                 <CollapsedItem href={href} label={label} icon={Icon} />
               </li>
             ))}
@@ -196,7 +196,7 @@ export function ErpSidebarNav({
           <ul className="flex flex-col gap-0.5">
             {navItems.map(({ href, label, icon: Icon }) => (
               href === '/erp/orders' ? (
-                <li key={href}>
+                <li key={href} className="hidden">
                   <Collapsible open={ordersOpen} onOpenChange={setOrdersOpen}>
                     <CollapsibleTrigger className={cn(navItemClass(ordersActive, false), 'w-full justify-between')}>
                       <span className="flex items-center gap-2">
@@ -252,7 +252,7 @@ export function ErpSidebarNav({
                   </Collapsible>
                 </li>
               ) : href === '/erp/customers' ? (
-                <li key={href}>
+                <li key={href} className="hidden">
                   <Collapsible open={customersOpen} onOpenChange={setCustomersOpen}>
                     <CollapsibleTrigger className={cn(navItemClass(customersActive, false, true), 'w-full justify-between')}>
                       <span className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export function ErpSidebarNav({
                   </Collapsible>
                 </li>
               ) : href === '/erp/product-onboarding' ? (
-                <li key={href}>
+                <li key={href} className="hidden">
                   <Collapsible open={productOnboardingOpen} onOpenChange={setProductOnboardingOpen}>
                     <CollapsibleTrigger className={cn(navItemClass(productOnboardingActive, false), 'w-full justify-between')}>
                       <span className="flex items-center gap-2">
@@ -308,7 +308,7 @@ export function ErpSidebarNav({
                   </Collapsible>
                 </li>
               ) : href === '/erp/reports' ? (
-                <li key={href}>
+                <li key={href} className="hidden">
                   <Collapsible open={reportsOpen} onOpenChange={setReportsOpen}>
                     <CollapsibleTrigger className={cn(navItemClass(reportsActive, false), 'w-full justify-between')}>
                       <span className="flex items-center gap-2">
@@ -336,7 +336,7 @@ export function ErpSidebarNav({
                   </Collapsible>
                 </li>
               ) : (
-                <li key={href}>
+                <li key={href} className="hidden">
                   <Link href={href} className={navItemClass(isActive(pathname, href), false)}>
                     <Icon className="h-4 w-4 shrink-0" />
                     <span>{label}</span>
